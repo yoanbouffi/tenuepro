@@ -73,13 +73,13 @@ export default function Footer() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
-                <span>12 Rue de la Victoire<br />97400 Saint-Denis, La Réunion</span>
+                <span>Basé à La Réunion<br />Intervention sur toute l'île</span>
               </li>
               <li className="flex items-center gap-2">
                 <svg className="w-4 h-4 text-[#7C3AED] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                 </svg>
-                <a href="tel:+262692000000" className="hover:text-[#7C3AED] transition-colors">+262 692 00 00 00</a>
+                <a href="tel:+262692105217" className="hover:text-[#7C3AED] transition-colors">0692 10 52 17</a>
               </li>
               <li className="flex items-center gap-2">
                 <svg className="w-4 h-4 text-[#7C3AED] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -98,8 +98,12 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-gray-800 mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-gray-500">
-          <p>© 2024 TenuePro. Tous droits réservés.</p>
-          <p>Fait à La Réunion — TenuePro</p>
+          <p>© 2026 TenuePro. Tous droits réservés.</p>
+          <div className="flex items-center gap-4">
+            <Link to="/cgv" className="hover:text-gray-300 transition-colors">Conditions Générales de Vente</Link>
+            <span>·</span>
+            <span>Fait à La Réunion</span>
+          </div>
         </div>
       </div>
     </footer>

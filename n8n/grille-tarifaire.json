@@ -1,0 +1,65 @@
+{
+  "products": [
+    {
+      "id": "polos",
+      "name": "Polo brodé",
+      "price_ht": 22,
+      "discount_threshold": 20,
+      "discount_rate": 10,
+      "unit": "pièce"
+    },
+    {
+      "id": "tshirts",
+      "name": "T-shirt flocage",
+      "price_ht": 18,
+      "discount_threshold": 20,
+      "discount_rate": 10,
+      "unit": "pièce"
+    },
+    {
+      "id": "vestes",
+      "name": "Veste brodée",
+      "price_ht": 35,
+      "discount_threshold": 10,
+      "discount_rate": 8,
+      "unit": "pièce"
+    },
+    {
+      "id": "casquettes",
+      "name": "Casquette brodée",
+      "price_ht": 15,
+      "discount_threshold": 20,
+      "discount_rate": 5,
+      "unit": "pièce"
+    },
+    {
+      "id": "tabliers",
+      "name": "Tablier brodé",
+      "price_ht": 20,
+      "discount_threshold": 20,
+      "discount_rate": 5,
+      "unit": "pièce"
+    },
+    {
+      "id": "chemises",
+      "name": "Chemise brodée",
+      "price_ht": 28,
+      "discount_threshold": 20,
+      "discount_rate": 8,
+      "unit": "pièce"
+    },
+    {
+      "id": "sacs",
+      "name": "Sac / Tote bag",
+      "price_ht": 12,
+      "discount_threshold": 30,
+      "discount_rate": 5,
+      "unit": "pièce"
+    }
+  ],
+  "tva": 8.5,
+  "validity_days": 30,
+  "deposit_percent": 50,
+  "currency": "EUR",
+  "note": "TVA taux réduit DOM applicable à La Réunion (art. 296 CGI). Remise automatique si quantité >= discount_threshold."
+}

@@ -5,6 +5,7 @@ import Home from './pages/Home'
 import Packs from './pages/Packs'
 import Realisations from './pages/Realisations'
 import Devis from './pages/Devis'
+import CGV from './pages/CGV'
 
 export default function App() {
   return (
@@ -17,6 +18,7 @@ export default function App() {
             <Route path="/packs" element={<Packs />} />
             <Route path="/realisations" element={<Realisations />} />
             <Route path="/devis" element={<Devis />} />
+            <Route path="/cgv" element={<CGV />} />
           </Routes>
         </main>
         <Footer />

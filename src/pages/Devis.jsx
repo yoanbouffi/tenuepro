@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { submitDevisForm } from '../lib/webhook'
 
 const secteurs = [
   'Restauration', 'Hôtellerie', 'Commerce de détail', 'Sport & Loisirs',
@@ -10,12 +11,11 @@ const secteurs = [
 const produits = [
   { id: 'polos', label: 'Polos' },
   { id: 'tshirts', label: 'T-shirts' },
-  { id: 'vestes', label: 'Vestes / Sweats' },
+  { id: 'vestes', label: 'Vestes & Sweats' },
   { id: 'casquettes', label: 'Casquettes' },
   { id: 'tabliers', label: 'Tabliers' },
   { id: 'chemises', label: 'Chemises' },
-  { id: 'sacs', label: 'Sacs / Tote bags' },
-  { id: 'autres', label: 'Autres pièces' },
+  { id: 'sacs', label: 'Sacs & Tote bags' },
 ]
 
 const marquages = [
@@ -36,7 +36,7 @@ const delais = [
 ]
 
 const initialForm = {
-  nom: '', prenom: '', entreprise: '', email: '', telephone: '',
+  nom: '', prenom: '', entreprise: '', siret: '', email: '', telephone: '',
   secteur: '', produits: [], marquage: '', quantite: '', delai: '',
   description: '', logo: null,
 }
@@ -46,6 +46,7 @@ export default function Devis() {
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({})
+  const [webhookError, setWebhookError] = useState(false)
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -79,7 +80,7 @@ export default function Devis() {
     return e
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     const errs = validate()
     if (Object.keys(errs).length > 0) {
@@ -88,11 +89,28 @@ export default function Devis() {
       return
     }
     setLoading(true)
-    setTimeout(() => {
-      setLoading(false)
+    setWebhookError(false)
+    const result = await submitDevisForm({
+      contact_name:  `${form.prenom} ${form.nom}`.trim(),
+      contact_email: form.email,
+      contact_phone: form.telephone,
+      company_name:  form.entreprise,
+      siret:         form.siret,
+      sector:        form.secteur,
+      products:      form.produits,
+      quantity:      form.quantite,
+      description:   form.description,
+      deadline:      form.delai,
+      logo_url:      null,
+    })
+    setLoading(false)
+    if (result.success) {
       setSubmitted(true)
       window.scrollTo({ top: 0, behavior: 'smooth' })
-    }, 1500)
+    } else {
+      setWebhookError(true)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
   }
 
   if (submitted) {
@@ -165,8 +183,24 @@ export default function Devis() {
       {/* Formulaire */}
       <section className="py-16 bg-gray-50">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          {submitted && (
+            <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-8 flex items-start gap-3">
+              <svg className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              <p className="text-sm text-green-800 font-medium">Votre demande a bien été envoyée ! Nous vous contactons sous 24h.</p>
+            </div>
+          )}
+          {webhookError && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-8 flex items-start gap-3">
+              <svg className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p className="text-sm text-red-800 font-medium">Une erreur s'est produite. Appelez-nous au <strong>0692 10 52 17</strong></p>
+            </div>
+          )}
           {Object.keys(errors).length > 0 && (
-            <div className="bg-violet-50 border border-red-200 rounded-xl p-4 mb-8 text-sm text-red-700">
+            <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-8 text-sm text-red-700">
               Veuillez corriger les erreurs indiquées dans le formulaire.
             </div>
           )}
@@ -182,13 +216,14 @@ export default function Devis() {
               <p className="text-sm text-gray-500 mb-4 ml-9">Pour vous envoyer votre devis personnalisé</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {[
-                  { name: 'prenom', label: 'Prénom *', placeholder: 'Jean', type: 'text' },
-                  { name: 'nom', label: 'Nom *', placeholder: 'Dupont', type: 'text' },
-                  { name: 'entreprise', label: 'Entreprise / Organisation', placeholder: 'Restaurant Le Lagon', type: 'text' },
-                  { name: 'email', label: 'Email *', placeholder: 'jean@monentreprise.re', type: 'email' },
-                  { name: 'telephone', label: 'Téléphone *', placeholder: '+262 692 XX XX XX', type: 'tel' },
+                  { name: 'prenom',     label: 'Prénom *',                  placeholder: 'Jean',                  type: 'text',  span: false },
+                  { name: 'nom',        label: 'Nom *',                     placeholder: 'Dupont',                type: 'text',  span: false },
+                  { name: 'entreprise', label: 'Entreprise / Organisation',  placeholder: 'Restaurant Le Lagon',  type: 'text',  span: true  },
+                  { name: 'siret',      label: 'SIRET',                     placeholder: '12345678901234',        type: 'text',  span: true, maxLength: 14 },
+                  { name: 'email',      label: 'Email *',                   placeholder: 'jean@monentreprise.re', type: 'email', span: false },
+                  { name: 'telephone',  label: 'Téléphone *',               placeholder: '+262 692 XX XX XX',    type: 'tel',   span: false },
                 ].map(field => (
-                  <div key={field.name} className={field.name === 'entreprise' ? 'sm:col-span-2' : ''}>
+                  <div key={field.name} className={field.span ? 'sm:col-span-2' : ''}>
                     <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
                     <input
                       type={field.type}
@@ -196,6 +231,7 @@ export default function Devis() {
                       value={form[field.name]}
                       onChange={handleChange}
                       placeholder={field.placeholder}
+                      maxLength={field.maxLength}
                       className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/40 focus:border-[#7C3AED] transition-colors ${
                         errors[field.name] ? 'border-red-400 bg-violet-50' : 'border-gray-200 hover:border-gray-300'
                       }`}
