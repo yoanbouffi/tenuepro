@@ -1,0 +1,252 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "tenuepro-envoyer-devis",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "c14cd40c-58a6-470b-8759-12240916342d",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "077ee0a5-08e1-404d-91b6-a7628b5349aa"
+    },
+    {
+      "parameters": {
+        "url": "=https://mqkrniiktvnuqzlvrfib.supabase.co/rest/v1/quotes?id=eq.{{ $json.quote_id }}&select=*,quote_requests(*)",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xa3JuaWlrdHZudXF6bHZyZmliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2NzIxOTksImV4cCI6MjA5MTI0ODE5OX0.XKPT0Ke0qLb8AQ5zi1lE9f-_Zh9uhFdTDctObOWeeso"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xa3JuaWlrdHZudXF6bHZyZmliIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTY3MjE5OSwiZXhwIjoyMDkxMjQ4MTk5fQ.GniLy8K7FWeI4jzK-A-9CIznqdpVHQqMWa-py_bXw3A"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "abc0fb92-cc6c-48a7-8fb4-a228fc71d0ad",
+      "name": "Recuperer devis",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        224,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://mqkrniiktvnuqzlvrfib.supabase.co/rest/v1/quotes?id=eq.{{ $json[0].id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xa3JuaWlrdHZudXF6bHZyZmliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2NzIxOTksImV4cCI6MjA5MTI0ODE5OX0.XKPT0Ke0qLb8AQ5zi1lE9f-_Zh9uhFdTDctObOWeeso"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xa3JuaWlrdHZudXF6bHZyZmliIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTY3MjE5OSwiZXhwIjoyMDkxMjQ4MTk5fQ.GniLy8K7FWeI4jzK-A-9CIznqdpVHQqMWa-py_bXw3A"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"status\": \"sent\"}",
+        "options": {}
+      },
+      "id": "83e6f396-6456-4946-8746-7ac7072d0508",
+      "name": "Mettre a jour statut",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        448,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "contact@tenuepro.re",
+        "toEmail": "={{ $('Recuperer devis').item.json[0].quote_requests.contact_email }}",
+        "subject": "=Votre devis TenuePro n°{{ $('Recuperer devis').item.json[0].quote_number }}",
+        "text": "=Bonjour {{ $('Recuperer devis').item.json[0].quote_requests.contact_name }},\n\nVeuillez trouver ci-joint votre devis n°{{ $('Recuperer devis').item.json[0].quote_number }}.\n\nTotal TTC : {{ $('Recuperer devis').item.json[0].total_ttc }}€\nCe devis est valable 30 jours.\n\nPour valider, répondez simplement à cet email ou appelez-nous.\n\nCordialement,\nL'équipe TenuePro\n0692 10 52 17\nwww.tenuepro.re",
+        "options": {}
+      },
+      "id": "e9369bab-722f-41a9-b26a-ef044db0c695",
+      "name": "Email client",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        672,
+        0
+      ],
+      "webhookId": "d4ce55f4-0efd-47d7-b6b1-441758200c26",
+      "credentials": {
+        "smtp": {
+          "id": "ez3l3j2LEdWnQniP",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://mqkrniiktvnuqzlvrfib.supabase.co/rest/v1/activities",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xa3JuaWlrdHZudXF6bHZyZmliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2NzIxOTksImV4cCI6MjA5MTI0ODE5OX0.XKPT0Ke0qLb8AQ5zi1lE9f-_Zh9uhFdTDctObOWeeso"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xa3JuaWlrdHZudXF6bHZyZmliIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTY3MjE5OSwiZXhwIjoyMDkxMjQ4MTk5fQ.GniLy8K7FWeI4jzK-A-9CIznqdpVHQqMWa-py_bXw3A"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"quote_id\": \"{{ $('Recuperer devis').item.json[0].id }}\", \"type\": \"email\", \"content\": \"Devis {{ $('Recuperer devis').item.json[0].quote_number }} envoyé au client\" }",
+        "options": {}
+      },
+      "id": "4330ba99-a798-4369-a1b0-f86796cc68e0",
+      "name": "Enregistrer activite",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        880,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "1294618163",
+        "text": "=✅ Devis {{ $('Recuperer devis').item.json[0].quote_number }} envoyé à {{ $('Recuperer devis').item.json[0].quote_requests.contact_email }}",
+        "additionalFields": {}
+      },
+      "id": "a43cade6-3e8e-4ec5-997e-85238a655e10",
+      "name": "Confirmation Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        1104,
+        0
+      ],
+      "webhookId": "b97cde3b-78ac-4153-8e0f-41e089cc8a43",
+      "credentials": {
+        "telegramApi": {
+          "id": "UsHenkPKSoZsRK75",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"success\": true}",
+        "options": {}
+      },
+      "id": "c1e75563-7b61-4fea-bab0-b11666935d21",
+      "name": "Reponse webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1328,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Recuperer devis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recuperer devis": {
+      "main": [
+        [
+          {
+            "node": "Mettre a jour statut",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mettre a jour statut": {
+      "main": [
+        [
+          {
+            "node": "Email client",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email client": {
+      "main": [
+        [
+          {
+            "node": "Enregistrer activite",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enregistrer activite": {
+      "main": [
+        [
+          {
+            "node": "Confirmation Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Confirmation Telegram": {
+      "main": [
+        [
+          {
+            "node": "Reponse webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "11f3f5daff577f57ecd846abf3b10002135106985f0b51d4128785eaf9a1ca35"
+  }
+}

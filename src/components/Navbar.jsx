@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { useAuth } from '../hooks/useAuth'
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const location = useLocation()
+  const { user, signOut } = useAuth()
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20)
@@ -55,9 +57,34 @@ export default function Navbar() {
 
           {/* CTA Desktop */}
           <div className="hidden md:flex items-center gap-3">
-            <Link to="/devis" className="btn-primary text-sm py-2 px-5">
-              Devis gratuit
-            </Link>
+            {user ? (
+              <>
+                <Link
+                  to="/espace-client"
+                  className="flex items-center gap-1.5 text-sm font-medium text-gray-700 hover:text-[#7C3AED] transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  Mon espace
+                </Link>
+                <button
+                  onClick={() => signOut()}
+                  className="text-sm text-gray-500 hover:text-red-500 transition-colors"
+                >
+                  Déconnexion
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" className="text-sm font-medium text-gray-600 hover:text-[#7C3AED] transition-colors">
+                  Connexion client
+                </Link>
+                <Link to="/devis" className="btn-primary text-sm py-2 px-5">
+                  Devis gratuit
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Burger Mobile */}
@@ -96,12 +123,28 @@ export default function Navbar() {
                 {label}
               </Link>
             ))}
-            <Link
-              to="/devis"
-              className="block mt-2 btn-primary justify-center text-center"
-            >
-              Devis gratuit
-            </Link>
+            {user ? (
+              <>
+                <Link to="/espace-client" className="block py-3 px-4 rounded-lg font-medium text-gray-700 hover:text-[#7C3AED] hover:bg-gray-50 transition-colors">
+                  Mon espace client
+                </Link>
+                <button
+                  onClick={() => signOut()}
+                  className="block w-full text-left py-3 px-4 rounded-lg font-medium text-gray-500 hover:text-red-500 hover:bg-gray-50 transition-colors"
+                >
+                  Déconnexion
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" className="block py-3 px-4 rounded-lg font-medium text-gray-700 hover:text-[#7C3AED] hover:bg-gray-50 transition-colors">
+                  Connexion client
+                </Link>
+                <Link to="/devis" className="block mt-2 btn-primary justify-center text-center">
+                  Devis gratuit
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}

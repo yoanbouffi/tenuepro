@@ -6,6 +6,9 @@ import Packs from './pages/Packs'
 import Realisations from './pages/Realisations'
 import Devis from './pages/Devis'
 import CGV from './pages/CGV'
+import Login from './pages/Login'
+import EspaceClient from './pages/EspaceClient'
+import Admin from './pages/Admin'
 
 export default function App() {
   return (
@@ -14,11 +17,14 @@ export default function App() {
         <Navbar />
         <main className="flex-1">
           <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/packs" element={<Packs />} />
-            <Route path="/realisations" element={<Realisations />} />
-            <Route path="/devis" element={<Devis />} />
-            <Route path="/cgv" element={<CGV />} />
+            <Route path="/"              element={<Home />} />
+            <Route path="/packs"         element={<Packs />} />
+            <Route path="/realisations"  element={<Realisations />} />
+            <Route path="/devis"         element={<Devis />} />
+            <Route path="/cgv"           element={<CGV />} />
+            <Route path="/login"                  element={<Login />} />
+            <Route path="/espace-client"         element={<EspaceClient />} />
+            <Route path="/admin-tenuepro-2026"   element={<Admin />} />
           </Routes>
         </main>
         <Footer />

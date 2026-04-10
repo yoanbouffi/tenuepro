@@ -1,0 +1,223 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "tenuepro-generer-devis",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "380d86d8-4cd3-41b3-950f-955854c9a606",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "38ef1bfa-fb36-42cb-bec5-4ed8cb39a646"
+    },
+    {
+      "parameters": {
+        "url": "=https://mqkrniiktvnuqzlvrfib.supabase.co/rest/v1/quote_requests?id=eq.{{ $json.quote_request_id }}&select=*",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xa3JuaWlrdHZudXF6bHZyZmliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2NzIxOTksImV4cCI6MjA5MTI0ODE5OX0.XKPT0Ke0qLb8AQ5zi1lE9f-_Zh9uhFdTDctObOWeeso"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xa3JuaWlrdHZudXF6bHZyZmliIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTY3MjE5OSwiZXhwIjoyMDkxMjQ4MTk5fQ.GniLy8K7FWeI4jzK-A-9CIznqdpVHQqMWa-py_bXw3A"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "84bf5424-fdf6-450d-af96-554c1d781cea",
+      "name": "Recuperer demande Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        224,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst demande = items[0].json[0];\nconst grille = {\n  'Polo brode': {price: 22, threshold: 20, discount: 10},\n  'T-shirt flocage': {price: 18, threshold: 20, discount: 10},\n  'Veste brodee': {price: 35, threshold: 10, discount: 8},\n  'Casquette brodee': {price: 15, threshold: 20, discount: 5},\n  'Tablier brode': {price: 20, threshold: 20, discount: 5},\n  'Chemise brodee': {price: 28, threshold: 20, discount: 8},\n  'Sac Tote bag': {price: 12, threshold: 30, discount: 5}\n};\nconst produits = Array.isArray(demande.products) ? demande.products : [demande.products];\nconst qty = parseInt(demande.quantity) || 1;\nlet totalHT = 0;\nconst lignes = produits.map(p => {\n  const info = grille[p] || {price: 20, threshold: 20, discount: 0};\n  const remise = qty >= info.threshold ? info.discount : 0;\n  const prixUnitaire = info.price;\n  const totalLigne = qty * prixUnitaire * (1 - remise/100);\n  totalHT += totalLigne;\n  return {produit: p, quantite: qty, prix_unitaire: prixUnitaire, remise: remise, total: totalLigne.toFixed(2)};\n});\nconst tva = 8.5;\nconst totalTVA = totalHT * tva / 100;\nconst totalTTC = totalHT + totalTVA;\nconst now = new Date();\nconst quoteNumber = 'DEV-' + now.getFullYear() + '-' + String(Math.floor(Math.random()*9000)+1000);\nconst expiry = new Date(now.getTime() + 30*24*60*60*1000);\nreturn [{\n  json: {\n    demande,\n    lignes,\n    totalHT: totalHT.toFixed(2),\n    totalTVA: totalTVA.toFixed(2),\n    totalTTC: totalTTC.toFixed(2),\n    quoteNumber,\n    dateEmission: now.toLocaleDateString('fr-FR'),\n    dateExpiration: expiry.toLocaleDateString('fr-FR')\n  }\n}];"
+      },
+      "id": "cd79eff9-b0b6-4e8a-9b03-01a2e5ff2245",
+      "name": "Calculer prix",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $input.first().json;\nconst lignesHTML = d.lignes.map(l => `<tr><td>${l.produit}</td><td>${l.quantite}</td><td>${l.prix_unitaire}€</td><td>${l.remise}%</td><td>${l.total}€</td></tr>`).join('');\nconst html = `<!DOCTYPE html><html><head><meta charset='UTF-8'><style>body{font-family:Arial,sans-serif;margin:40px;color:#333}h1{color:#E63946}table{width:100%;border-collapse:collapse;margin:20px 0}th,td{padding:10px;border:1px solid #ddd;text-align:left}th{background:#E63946;color:white}.total{font-size:1.2em;font-weight:bold}.footer{margin-top:40px;font-size:0.85em;color:#666}</style></head><body><div style='display:flex;justify-content:space-between'><div><h1>TENUEPRO</h1><p>Marquage textile professionnel<br>La Réunion — 0692 10 52 17<br>www.tenuepro.re</p></div><div style='text-align:right'><h2>DEVIS</h2><p>N° ${d.quoteNumber}<br>Date : ${d.dateEmission}<br>Valable jusqu'au : ${d.dateExpiration}</p></div></div><hr><h3>CLIENT</h3><p>${d.demande.contact_name}<br>${d.demande.company_name || ''}<br>SIRET : ${d.demande.siret || 'N/A'}<br>${d.demande.contact_email}<br>${d.demande.contact_phone || ''}</p><h3>DÉTAIL DU DEVIS</h3><table><thead><tr><th>Produit</th><th>Quantité</th><th>Prix unit. HT</th><th>Remise</th><th>Total HT</th></tr></thead><tbody>${lignesHTML}</tbody></table><div style='text-align:right'><p>Total HT : ${d.totalHT}€</p><p>TVA 8,5% : ${d.totalTVA}€</p><p class='total'>Total TTC : ${d.totalTTC}€</p></div><div class='footer'><p>Conditions : Acompte 50% à la commande. Solde à la livraison.<br>Délai de fabrication : 10-15 jours ouvrés après validation du BAT.<br>Devis valable 30 jours.</p></div></body></html>`;\nreturn [{json: {html, ...d}}];"
+      },
+      "id": "fe889360-cc78-4ef4-a69b-3b94f9caa24d",
+      "name": "Generer HTML devis",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://mqkrniiktvnuqzlvrfib.supabase.co/rest/v1/quotes",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xa3JuaWlrdHZudXF6bHZyZmliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2NzIxOTksImV4cCI6MjA5MTI0ODE5OX0.XKPT0Ke0qLb8AQ5zi1lE9f-_Zh9uhFdTDctObOWeeso"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xa3JuaWlrdHZudXF6bHZyZmliIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTY3MjE5OSwiZXhwIjoyMDkxMjQ4MTk5fQ.GniLy8K7FWeI4jzK-A-9CIznqdpVHQqMWa-py_bXw3A"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"quote_request_id\": \"{{ $json.demande.id }}\", \"quote_number\": \"{{ $json.quoteNumber }}\", \"total_ht\": {{ $json.totalHT }}, \"total_ttc\": {{ $json.totalTTC }}, \"status\": \"draft\", \"valid_until\": \"{{ $json.dateExpiration }}\" }",
+        "options": {}
+      },
+      "id": "cd3d7e4c-840d-4f2d-83f7-2b34257aa4e5",
+      "name": "Sauvegarder devis Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        880,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "1294618163",
+        "text": "=✅ Devis {{ $('Calculer prix').item.json.quoteNumber }} généré !\n\n👤 Client : {{ $('Calculer prix').item.json.demande.company_name }}\n📧 Email : {{ $('Calculer prix').item.json.demande.contact_email }}\n💰 Total HT : {{ $('Calculer prix').item.json.totalHT }}€\n💰 Total TTC : {{ $('Calculer prix').item.json.totalTTC }}€\n\nQue voulez-vous faire ?\n✅ Envoyer au client → déclencher WF3\n✏️ Modifier manuellement dans Supabase",
+        "additionalFields": {}
+      },
+      "id": "d65f093a-8519-41b0-aff4-19d7e5207beb",
+      "name": "Notification Telegram validation",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        1104,
+        0
+      ],
+      "webhookId": "13d61788-6476-4d81-8522-4f4ff8209879",
+      "credentials": {
+        "telegramApi": {
+          "id": "UsHenkPKSoZsRK75",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"success\": true, \"quote_number\": \"{{ $('Calculer prix').item.json.quoteNumber }}\" }",
+        "options": {}
+      },
+      "id": "af9738ba-fbeb-4571-9fa3-260daa3fceb5",
+      "name": "Reponse webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1328,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Recuperer demande Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recuperer demande Supabase": {
+      "main": [
+        [
+          {
+            "node": "Calculer prix",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculer prix": {
+      "main": [
+        [
+          {
+            "node": "Generer HTML devis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generer HTML devis": {
+      "main": [
+        [
+          {
+            "node": "Sauvegarder devis Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sauvegarder devis Supabase": {
+      "main": [
+        [
+          {
+            "node": "Notification Telegram validation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notification Telegram validation": {
+      "main": [
+        [
+          {
+            "node": "Reponse webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "11f3f5daff577f57ecd846abf3b10002135106985f0b51d4128785eaf9a1ca35"
+  }
+}

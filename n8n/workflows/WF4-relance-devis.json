@@ -1,0 +1,173 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "id": "d8c41e62-4cb3-4edf-a137-1b521b1aa586",
+      "name": "Schedule 9h quotidien",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        -656,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://mqkrniiktvnuqzlvrfib.supabase.co/rest/v1/quotes?status=eq.sent&select=*,quote_requests(contact_name,contact_email,company_name)",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xa3JuaWlrdHZudXF6bHZyZmliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2NzIxOTksImV4cCI6MjA5MTI0ODE5OX0.XKPT0Ke0qLb8AQ5zi1lE9f-_Zh9uhFdTDctObOWeeso"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xa3JuaWlrdHZudXF6bHZyZmliIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTY3MjE5OSwiZXhwIjoyMDkxMjQ4MTk5fQ.GniLy8K7FWeI4jzK-A-9CIznqdpVHQqMWa-py_bXw3A"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d0876454-de24-49c9-b2d5-43e4e1d9a60e",
+      "name": "Recuperer devis envoyes",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        -448,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst now = new Date();\nconst relances = [];\nconst expires = [];\nfor (const item of items) {\n  const devis = item.json;\n  const createdAt = new Date(devis.created_at);\n  const diffJours = Math.floor((now - createdAt) / (1000*60*60*24));\n  if (diffJours >= 30) { expires.push(devis); }\n  else if (diffJours >= 7) { relances.push(devis); }\n}\nreturn [{json: {relances, expires, total_relances: relances.length, total_expires: expires.length}}];"
+      },
+      "id": "99b4ece9-a854-4d77-ad3f-76d2befdaeb7",
+      "name": "Filtrer devis J+7 et J+30",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -224,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const {relances} = $input.first().json;\nconst results = [];\nfor (const devis of relances) {\n  results.push({json: {devis, action: 'relance'}});\n}\nif (results.length === 0) return [{json: {skipped: true}}];\nreturn results;"
+      },
+      "id": "037fbdfa-efdd-4e1c-9641-3ce5c082ee3a",
+      "name": "Boucle relances",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "contact@tenuepro.re",
+        "toEmail": "={{ $json.devis.quote_requests.contact_email }}",
+        "subject": "=Votre devis TenuePro n°{{ $json.devis.quote_number }} — Avez-vous des questions ?",
+        "text": "=Bonjour {{ $json.devis.quote_requests.contact_name }},\n\nNous revenons vers vous concernant votre devis n°{{ $json.devis.quote_number }}.\n\nN'hésitez pas à nous contacter si vous avez des questions ou souhaitez modifier votre commande.\n\n0692 10 52 17 — www.tenuepro.re\n\nCordialement,\nL'équipe TenuePro",
+        "options": {}
+      },
+      "id": "e19c4357-7a9e-46f5-8b92-c753b04d445c",
+      "name": "Email relance",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "webhookId": "6a35b61a-644d-4aa1-b6fa-377338c906da",
+      "credentials": {
+        "smtp": {
+          "id": "ez3l3j2LEdWnQniP",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "1294618163",
+        "text": "=📩 Relances envoyées : {{ $('Filtrer devis J+7 et J+30').item.json.total_relances }}\n⏰ Devis expirés : {{ $('Filtrer devis J+7 et J+30').item.json.total_expires }}",
+        "additionalFields": {}
+      },
+      "id": "0a13cae0-6986-4648-b763-6d971be256a1",
+      "name": "Recap Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        224,
+        208
+      ],
+      "webhookId": "6e59a9f4-3bb5-4e07-847b-32926c44a263",
+      "credentials": {
+        "telegramApi": {
+          "id": "UsHenkPKSoZsRK75",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule 9h quotidien": {
+      "main": [
+        [
+          {
+            "node": "Recuperer devis envoyes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recuperer devis envoyes": {
+      "main": [
+        [
+          {
+            "node": "Filtrer devis J+7 et J+30",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtrer devis J+7 et J+30": {
+      "main": [
+        [
+          {
+            "node": "Boucle relances",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Boucle relances": {
+      "main": [
+        [
+          {
+            "node": "Recap Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "11f3f5daff577f57ecd846abf3b10002135106985f0b51d4128785eaf9a1ca35"
+  }
+}

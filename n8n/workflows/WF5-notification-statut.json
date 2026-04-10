@@ -1,0 +1,97 @@
+{
+  "name": "WF5 - Notification Changement Statut Commande",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "tenuepro-statut-change",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "1",
+      "name": "Webhook statut",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const status_labels = {\n  'demande_recue': 'Demande reçue',\n  'devis_envoye': 'Devis envoyé',\n  'devis_valide': 'Devis validé',\n  'maquette_preparation': 'Maquette en préparation',\n  'maquette_validee': 'Maquette validée',\n  'en_production': 'En production',\n  'expediee': 'Expédiée / Prête',\n  'livree': 'Livrée',\n  'annulee': 'Annulée'\n};\nconst data = $input.first().json;\nreturn [{\n  json: {\n    ...data,\n    status_label: status_labels[data.new_status] || data.new_status\n  }\n}];"
+      },
+      "id": "2",
+      "name": "Formatter statut",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "chatId": "1294618163",
+        "text": "=📦 Commande {{ $json.order_number }} mise à jour !\n\n👤 Client : {{ $json.client_name }}\n📊 Nouveau statut : {{ $json.status_label }}\n📝 Note : {{ $json.note || 'Aucune' }}",
+        "additionalFields": {}
+      },
+      "id": "3",
+      "name": "Telegram admin",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [680, 200],
+      "credentials": {
+        "telegramApi": {
+          "id": "UsHenkPKSoZsRK75",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "noreply@tenuepro.re",
+        "toEmail": "={{ $json.client_email }}",
+        "subject": "=Votre commande TenuePro n°{{ $json.order_number }} — Mise à jour",
+        "text": "=Bonjour {{ $json.client_name }},\n\nVotre commande n°{{ $json.order_number }} vient d'être mise à jour.\n\n📊 Statut actuel : {{ $json.status_label }}\n{{ $json.note ? 'Note : ' + $json.note : '' }}\n\nRetrouvez le suivi de votre commande dans votre espace client :\nhttps://www.tenuepro.re/espace-client\n\nCordialement,\nL'équipe TenuePro\n0692 10 52 17",
+        "options": {}
+      },
+      "id": "4",
+      "name": "Email client statut",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [680, 400],
+      "credentials": {
+        "smtp": {
+          "id": "ez3l3j2LEdWnQniP",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"success\": true}",
+        "options": {}
+      },
+      "id": "5",
+      "name": "Reponse",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [900, 300]
+    }
+  ],
+  "connections": {
+    "Webhook statut": {
+      "main": [[{ "node": "Formatter statut", "type": "main", "index": 0 }]]
+    },
+    "Formatter statut": {
+      "main": [[
+        { "node": "Telegram admin",      "type": "main", "index": 0 },
+        { "node": "Email client statut", "type": "main", "index": 0 }
+      ]]
+    },
+    "Telegram admin": {
+      "main": [[{ "node": "Reponse", "type": "main", "index": 0 }]]
+    },
+    "Email client statut": {
+      "main": [[{ "node": "Reponse", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" }
+}
