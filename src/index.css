@@ -28,4 +28,10 @@
   .section-subtitle {
     @apply text-lg text-gray-500 mt-3 max-w-2xl mx-auto;
   }
+  .th {
+    @apply text-left px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wide;
+  }
+  .td {
+    @apply px-4 py-3 text-sm;
+  }
 }

@@ -16,7 +16,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const status_labels = {\n  'demande_recue': 'Demande reçue',\n  'devis_envoye': 'Devis envoyé',\n  'devis_valide': 'Devis validé',\n  'maquette_preparation': 'Maquette en préparation',\n  'maquette_validee': 'Maquette validée',\n  'en_production': 'En production',\n  'expediee': 'Expédiée / Prête',\n  'livree': 'Livrée',\n  'annulee': 'Annulée'\n};\nconst data = $input.first().json;\nreturn [{\n  json: {\n    ...data,\n    status_label: status_labels[data.new_status] || data.new_status\n  }\n}];"
+        "jsCode": "const labels = {\n  'demande_recue':'Demande reçue',\n  'devis_envoye':'Devis envoyé',\n  'devis_valide':'Devis validé',\n  'maquette_preparation':'Maquette en préparation',\n  'maquette_validee':'Maquette validée',\n  'en_production':'En production',\n  'expediee':'Expédiée / Prête',\n  'livree':'Livrée',\n  'annulee':'Annulée',\n  'new':'Nouvelle demande',\n  'processing':'En cours de traitement',\n  'quoted':'Devis envoyé',\n  'closed':'Clôturée'\n};\nconst d = $input.first().json;\nreturn [{json:{...d, status_label: labels[d.new_status]||d.new_status}}];"
       },
       "id": "2",
       "name": "Formatter statut",
@@ -26,15 +26,29 @@
     },
     {
       "parameters": {
-        "chatId": "1294618163",
-        "text": "=📦 Commande {{ $json.order_number }} mise à jour !\n\n👤 Client : {{ $json.client_name }}\n📊 Nouveau statut : {{ $json.status_label }}\n📝 Note : {{ $json.note || 'Aucune' }}",
-        "additionalFields": {}
+        "conditions": {
+          "string": [
+            {"value1": "={{ $json.client_email }}", "operation": "isNotEmpty"}
+          ]
+        }
       },
       "id": "3",
+      "name": "Email client existe",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "chatId": "1294618163",
+        "text": "=📦 Commande {{ $json.order_number || $json.quote_number || 'N/A' }} mise à jour !\n\n👤 Client : {{ $json.client_name }}\n📊 Nouveau statut : {{ $json.status_label }}\n📝 Note : {{ $json.note || 'Aucune' }}\n📧 Email : {{ $json.client_email }}",
+        "additionalFields": {}
+      },
+      "id": "4",
       "name": "Telegram admin",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1,
-      "position": [680, 200],
+      "position": [900, 200],
       "credentials": {
         "telegramApi": {
           "id": "UsHenkPKSoZsRK75",
@@ -46,15 +60,15 @@
       "parameters": {
         "fromEmail": "noreply@tenuepro.re",
         "toEmail": "={{ $json.client_email }}",
-        "subject": "=Votre commande TenuePro n°{{ $json.order_number }} — Mise à jour",
-        "text": "=Bonjour {{ $json.client_name }},\n\nVotre commande n°{{ $json.order_number }} vient d'être mise à jour.\n\n📊 Statut actuel : {{ $json.status_label }}\n{{ $json.note ? 'Note : ' + $json.note : '' }}\n\nRetrouvez le suivi de votre commande dans votre espace client :\nhttps://www.tenuepro.re/espace-client\n\nCordialement,\nL'équipe TenuePro\n0692 10 52 17",
+        "subject": "=Votre commande TenuePro — {{ $json.status_label }}",
+        "text": "=Bonjour {{ $json.client_name }},\n\nVotre dossier TenuePro vient d'être mis à jour.\n\n📊 Statut actuel : {{ $json.status_label }}\n{{ $json.note ? 'Note : ' + $json.note : '' }}\n\nRetrouvez le suivi dans votre espace client :\nhttps://www.tenuepro.re/espace-client\n\nCordialement,\nL'équipe TenuePro — 0692 10 52 17",
         "options": {}
       },
-      "id": "4",
-      "name": "Email client statut",
+      "id": "5",
+      "name": "Email client",
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2,
-      "position": [680, 400],
+      "position": [900, 400],
       "credentials": {
         "smtp": {
           "id": "ez3l3j2LEdWnQniP",
@@ -68,30 +82,25 @@
         "responseBody": "{\"success\": true}",
         "options": {}
       },
-      "id": "5",
+      "id": "6",
       "name": "Reponse",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [900, 300]
+      "position": [1120, 300]
     }
   ],
   "connections": {
-    "Webhook statut": {
-      "main": [[{ "node": "Formatter statut", "type": "main", "index": 0 }]]
+    "Webhook statut": {"main": [[{"node": "Formatter statut", "type": "main", "index": 0}]]},
+    "Formatter statut": {"main": [[{"node": "Email client existe", "type": "main", "index": 0}]]},
+    "Email client existe": {
+      "main": [
+        [{"node": "Telegram admin", "type": "main", "index": 0}, {"node": "Email client", "type": "main", "index": 0}],
+        [{"node": "Telegram admin", "type": "main", "index": 0}]
+      ]
     },
-    "Formatter statut": {
-      "main": [[
-        { "node": "Telegram admin",      "type": "main", "index": 0 },
-        { "node": "Email client statut", "type": "main", "index": 0 }
-      ]]
-    },
-    "Telegram admin": {
-      "main": [[{ "node": "Reponse", "type": "main", "index": 0 }]]
-    },
-    "Email client statut": {
-      "main": [[{ "node": "Reponse", "type": "main", "index": 0 }]]
-    }
+    "Telegram admin": {"main": [[{"node": "Reponse", "type": "main", "index": 0}]]},
+    "Email client": {"main": [[{"node": "Reponse", "type": "main", "index": 0}]]}
   },
   "active": false,
-  "settings": { "executionOrder": "v1" }
+  "settings": {"executionOrder": "v1"}
 }

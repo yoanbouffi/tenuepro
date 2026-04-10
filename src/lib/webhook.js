@@ -1,3 +1,20 @@
+export const notifyStatusChange = async (data) => {
+  try {
+    const response = await fetch(
+      'https://n8n.srv1087606.hstgr.cloud/webhook/tenuepro-statut-change',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      }
+    );
+    return { success: response.ok };
+  } catch (error) {
+    console.error('Erreur notification statut:', error);
+    return { success: false };
+  }
+};
+
 export const submitDevisForm = async (formData) => {
   const N8N_WEBHOOK_URL = import.meta.env.VITE_N8N_WEBHOOK_URL;
   try {
