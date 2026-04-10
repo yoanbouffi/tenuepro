@@ -166,27 +166,27 @@ export default function Home() {
           {/* Hero visual */}
           <div className="hidden md:flex items-center justify-center">
             <div className="relative">
-              {/* Main image */}
+              {/* Main image - Équipe en uniforme professionnel */}
               <div className="w-80 h-80 rounded-3xl overflow-hidden shadow-2xl rotate-3">
                 <img
-                  src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=640&q=80"
-                  alt="Équipe en tenues professionnelles"
+                  src="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=640&q=80"
+                  alt="Équipe en tenues professionnelles brodées"
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent rounded-3xl" />
               </div>
-              {/* Second image card */}
+              {/* Second image card - Détail broderie/flocage */}
               <div className="absolute -bottom-6 -left-6 w-44 h-44 rounded-2xl overflow-hidden shadow-xl border-2 border-white -rotate-3">
                 <img
-                  src="https://images.unsplash.com/photo-1585412727339-54e4bae3bbf9?auto=format&fit=crop&w=400&q=80"
-                  alt="Broderie sur polo"
+                  src="https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=400&q=80"
+                  alt="Détail broderie logo polo"
                   className="w-full h-full object-cover"
                 />
               </div>
-              {/* Badge */}
+              {/* Badge - Délai moyen */}
               <div className="absolute -top-4 -right-4 bg-white rounded-xl shadow-xl p-3 text-center z-10">
-                <p className="text-2xl font-extrabold text-[#7C3AED]">+500</p>
-                <p className="text-xs text-gray-600 font-medium">clients satisfaits</p>
+                <p className="text-2xl font-extrabold text-[#7C3AED]">10-15j</p>
+                <p className="text-xs text-gray-600 font-medium">délai moyen</p>
               </div>
             </div>
           </div>
@@ -198,27 +198,25 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="section-title">Pourquoi choisir TenuePro ?</h2>
-            <p className="section-subtitle">Des tenues professionnelles qui font la différence, livrées à La Réunion.</p>
+            <p className="section-subtitle">L'excellence broderie & flocage, sans mauvaise surprise.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {arguments_.map((arg, i) => (
-              <div key={i} className="group p-8 rounded-2xl border border-gray-100 hover:border-[#7C3AED]/30 hover:shadow-lg transition-all duration-300">
-                <div className="w-14 h-14 bg-[#7C3AED]/10 rounded-xl flex items-center justify-center text-[#7C3AED] mb-5 group-hover:bg-[#7C3AED] group-hover:text-white transition-colors duration-300">
-                  {arg.icon}
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">{arg.title}</h3>
-                <p className="text-gray-500 leading-relaxed">{arg.desc}</p>
+              <div key={i} className="bg-gray-50 p-8 rounded-xl text-center hover:shadow-md transition-shadow duration-300">
+                <div className="text-[#7C3AED] text-4xl mb-4">{arg.icon}</div>
+                <h3 className="font-bold text-gray-900 text-lg mb-2">{arg.title}</h3>
+                <p className="text-gray-500 text-sm leading-relaxed">{arg.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── PACKS APERÇU ── */}
+      {/* ── PACKS ── */}
       <section className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="section-title">Nos packs tout compris</h2>
+            <h2 className="section-title">Nos formules</h2>
             <p className="section-subtitle">Des formules claires, sans surprise, adaptées à chaque besoin.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

@@ -46,9 +46,15 @@ export default function Devis() {
   const navigate = useNavigate()
   const { user, loading: authLoading } = useAuth()
 
+  // ─── LES HOOKS DOIVENT ÊTRE APPELÉS AU DÉBUT DU COMPOSANT ───────────────────────────────────
+  const [form, setForm] = useState(initialForm)
+  const [submitted, setSubmitted] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [errors, setErrors] = useState({})
+  const [webhookError, setWebhookError] = useState(false)
+
   // ─── PROTECTION: Rediriger si non connecté ───────────────────────────────────
   useEffect(() => {
-    // Si chargement terminé ET pas d'utilisateur → rediriger vers login
     if (!authLoading && !user) {
       console.log('❌ Utilisateur non connecté sur /devis, redirection vers /login')
       navigate('/login', { state: { from: '/devis' } })
@@ -71,13 +77,6 @@ export default function Devis() {
   if (!user) {
     return null
   }
-
-  // ─── LE FORMULAIRE DE DEVIS COMMENCE ICI ───────────────────────────────────
-  const [form, setForm] = useState(initialForm)
-  const [submitted, setSubmitted] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [errors, setErrors] = useState({})
-  const [webhookError, setWebhookError] = useState(false)
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -185,91 +184,109 @@ export default function Devis() {
   return (
     <div className="pt-16">
       {/* Header */}
-      <section className="bg-gray-900 py-16 text-center">
+      <section className="bg-[#7C3AED] text-white py-12 text-center">
         <div className="max-w-3xl mx-auto px-4">
-          <span className="inline-block bg-[#7C3AED]/20 text-[#7C3AED] text-sm font-semibold px-4 py-1.5 rounded-full mb-4 border border-[#7C3AED]/30">
-            Devis gratuit
-          </span>
-          <h1 className="text-4xl font-extrabold text-white mb-4">Décrivez votre projet</h1>
-          <p className="text-gray-400 text-lg">Maquette + devis personnalisé sous 24h, sans engagement. 100% gratuit.</p>
+          <h1 className="text-4xl font-extrabold mb-3">Demande de devis</h1>
+          <p className="text-violet-100">Complétez ce formulaire, et recevez une maquette gratuite sous 24h</p>
         </div>
       </section>
 
-      {/* Avantages */}
-      <div className="bg-[#7C3AED] py-4">
-        <div className="max-w-5xl mx-auto px-4">
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 text-white text-sm font-medium">
-            {['Maquette gratuite sous 24h', 'Sans engagement', 'Livraison à La Réunion', 'Acompte 50% à la commande'].map((t, i) => (
-              <span key={i} className="flex items-center gap-1.5">
-                <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-                {t}
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
-
       {/* Formulaire */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          {submitted && (
-            <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-8 flex items-start gap-3">
-              <svg className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-              <p className="text-sm text-green-800 font-medium">Votre demande a bien été envoyée ! Nous vous contactons sous 24h.</p>
-            </div>
-          )}
+      <section className="py-12 bg-gray-50 min-h-screen">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6">
+          {/* Erreur webhook */}
           {webhookError && (
-            <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-8 flex items-start gap-3">
-              <svg className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <p className="text-sm text-red-800 font-medium">Une erreur s'est produite. Appelez-nous au <strong>0692 10 52 17</strong></p>
-            </div>
-          )}
-          {Object.keys(errors).length > 0 && (
-            <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-8 text-sm text-red-700">
-              Veuillez corriger les erreurs indiquées dans le formulaire.
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-700 text-sm">
+                Une erreur s'est produite lors de l'envoi. Veuillez réessayer.
+              </p>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="bg-white rounded-3xl shadow-lg p-8 space-y-8">
-
-            {/* Infos personnelles */}
+          <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-lg p-8 space-y-6">
+            {/* Coordonnées */}
             <div>
               <h2 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
                 <span className="w-7 h-7 bg-[#7C3AED] rounded-full text-white text-xs font-bold flex items-center justify-center">1</span>
-                Vos coordonnées
+                Vos coordonnées *
               </h2>
-              <p className="text-sm text-gray-500 mb-4 ml-9">Pour vous envoyer votre devis personnalisé</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {[
-                  { name: 'prenom',     label: 'Prénom *',                  placeholder: 'Jean',                  type: 'text',  span: false },
-                  { name: 'nom',        label: 'Nom *',                     placeholder: 'Dupont',                type: 'text',  span: false },
-                  { name: 'entreprise', label: 'Entreprise / Organisation',  placeholder: 'Restaurant Le Lagon',  type: 'text',  span: true  },
-                  { name: 'siret',      label: 'SIRET',                     placeholder: '12345678901234',        type: 'text',  span: true, maxLength: 14 },
-                  { name: 'email',      label: 'Email *',                   placeholder: 'jean@monentreprise.re', type: 'email', span: false },
-                  { name: 'telephone',  label: 'Téléphone *',               placeholder: '+262 692 XX XX XX',    type: 'tel',   span: false },
-                ].map(field => (
-                  <div key={field.name} className={field.span ? 'sm:col-span-2' : ''}>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
-                    <input
-                      type={field.type}
-                      name={field.name}
-                      value={form[field.name]}
-                      onChange={handleChange}
-                      placeholder={field.placeholder}
-                      maxLength={field.maxLength}
-                      className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/40 focus:border-[#7C3AED] transition-colors ${
-                        errors[field.name] ? 'border-red-400 bg-violet-50' : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                    />
-                    {errors[field.name] && <p className="text-red-500 text-xs mt-1">{errors[field.name]}</p>}
-                  </div>
-                ))}
+              <p className="text-sm text-gray-500 mb-4 ml-9">Pour qu'on vous recontacte rapidement</p>
+              <div className="grid grid-cols-2 gap-4 ml-0">
+                <div>
+                  <input
+                    type="text"
+                    name="prenom"
+                    value={form.prenom}
+                    onChange={handleChange}
+                    placeholder="Prénom"
+                    className={`w-full px-4 py-3 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/40 focus:border-[#7C3AED] hover:border-gray-300 transition-colors ${errors.prenom ? 'border-red-500' : 'border-gray-200'}`}
+                  />
+                  {errors.prenom && <p className="text-red-500 text-xs mt-1">{errors.prenom}</p>}
+                </div>
+                <div>
+                  <input
+                    type="text"
+                    name="nom"
+                    value={form.nom}
+                    onChange={handleChange}
+                    placeholder="Nom"
+                    className={`w-full px-4 py-3 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/40 focus:border-[#7C3AED] hover:border-gray-300 transition-colors ${errors.nom ? 'border-red-500' : 'border-gray-200'}`}
+                  />
+                  {errors.nom && <p className="text-red-500 text-xs mt-1">{errors.nom}</p>}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4 mt-3 ml-0">
+                <div>
+                  <input
+                    type="email"
+                    name="email"
+                    value={form.email}
+                    onChange={handleChange}
+                    placeholder="Email"
+                    className={`w-full px-4 py-3 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/40 focus:border-[#7C3AED] hover:border-gray-300 transition-colors ${errors.email ? 'border-red-500' : 'border-gray-200'}`}
+                  />
+                  {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+                </div>
+                <div>
+                  <input
+                    type="tel"
+                    name="telephone"
+                    value={form.telephone}
+                    onChange={handleChange}
+                    placeholder="Téléphone"
+                    className={`w-full px-4 py-3 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/40 focus:border-[#7C3AED] hover:border-gray-300 transition-colors ${errors.telephone ? 'border-red-500' : 'border-gray-200'}`}
+                  />
+                  {errors.telephone && <p className="text-red-500 text-xs mt-1">{errors.telephone}</p>}
+                </div>
+              </div>
+            </div>
+
+            <hr className="border-gray-100" />
+
+            {/* Entreprise */}
+            <div>
+              <h2 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
+                <span className="w-7 h-7 bg-[#7C3AED] rounded-full text-white text-xs font-bold flex items-center justify-center">2</span>
+                Votre entreprise / Organisation
+              </h2>
+              <p className="text-sm text-gray-500 mb-4 ml-9">Le nom et le SIRET (optionnel)</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 ml-0">
+                <input
+                  type="text"
+                  name="entreprise"
+                  value={form.entreprise}
+                  onChange={handleChange}
+                  placeholder="Nom de l'entreprise"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/40 focus:border-[#7C3AED] hover:border-gray-300 transition-colors"
+                />
+                <input
+                  type="text"
+                  name="siret"
+                  value={form.siret}
+                  onChange={handleChange}
+                  placeholder="SIRET"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/40 focus:border-[#7C3AED] hover:border-gray-300 transition-colors"
+                />
               </div>
             </div>
 
@@ -278,20 +295,20 @@ export default function Devis() {
             {/* Secteur */}
             <div>
               <h2 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
-                <span className="w-7 h-7 bg-[#7C3AED] rounded-full text-white text-xs font-bold flex items-center justify-center">2</span>
-                Secteur d'activité
+                <span className="w-7 h-7 bg-[#7C3AED] rounded-full text-white text-xs font-bold flex items-center justify-center">3</span>
+                Secteur d'activité *
               </h2>
-              <p className="text-sm text-gray-500 mb-4 ml-9">Pour mieux adapter nos recommandations</p>
+              <p className="text-sm text-gray-500 mb-4 ml-9">Quel est votre domaine ?</p>
               <select
                 name="secteur"
                 value={form.secteur}
                 onChange={handleChange}
-                className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/40 focus:border-[#7C3AED] transition-colors ${
-                  errors.secteur ? 'border-red-400 bg-violet-50' : 'border-gray-200 hover:border-gray-300'
-                }`}
+                className={`w-full px-4 py-3 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/40 focus:border-[#7C3AED] hover:border-gray-300 transition-colors ${errors.secteur ? 'border-red-500' : 'border-gray-200'}`}
               >
-                <option value="">Sélectionnez votre secteur...</option>
-                {secteurs.map(s => <option key={s} value={s}>{s}</option>)}
+                <option value="">Sélectionnez un secteur</option>
+                {secteurs.map(s => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
               </select>
               {errors.secteur && <p className="text-red-500 text-xs mt-1">{errors.secteur}</p>}
             </div>
@@ -302,14 +319,14 @@ export default function Devis() {
             <div>
               <h2 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
                 <span className="w-7 h-7 bg-[#7C3AED] rounded-full text-white text-xs font-bold flex items-center justify-center">3</span>
-                Produits souhaités *
+                Vos produits *
               </h2>
-              <p className="text-sm text-gray-500 mb-4 ml-9">Cochez tout ce qui vous intéresse</p>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <p className="text-sm text-gray-500 mb-4 ml-9">Quel(s) produit(s) ?</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {produits.map(p => (
                   <label
                     key={p.id}
-                    className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
+                    className={`p-3 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
                       form.produits.includes(p.id)
                         ? 'border-[#7C3AED] bg-violet-50'
                         : 'border-gray-200 hover:border-gray-300 bg-white'
@@ -319,12 +336,12 @@ export default function Devis() {
                       type="checkbox"
                       checked={form.produits.includes(p.id)}
                       onChange={() => handleCheckbox(p.id)}
-                      className="sr-only"
+                      className="accent-[#7C3AED] cursor-pointer"
                     />
-                    <span className="text-xs font-semibold text-gray-700 text-center">{p.label}</span>
+                    <p className="text-sm font-medium text-gray-900 ml-2 inline">{p.label}</p>
                     {form.produits.includes(p.id) && (
-                      <svg className="w-4 h-4 text-[#7C3AED]" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      <svg className="w-4 h-4 text-[#7C3AED] float-right mt-0.5">
+                        <path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
                       </svg>
                     )}
                   </label>
