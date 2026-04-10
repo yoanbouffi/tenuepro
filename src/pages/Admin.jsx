@@ -5,27 +5,25 @@ import { supabase } from '../lib/supabase'
 // ─── Constantes ────────────────────────────────────────────────────────────────
 
 const ORDER_STATUS_OPTIONS = [
-  { value: 'demande_recue',        label: 'Demande reçue' },
-  { value: 'devis_envoye',         label: 'Devis envoyé' },
-  { value: 'devis_valide',         label: 'Devis validé' },
-  { value: 'maquette_preparation', label: 'Maquette en préparation' },
-  { value: 'maquette_validee',     label: 'Maquette validée' },
-  { value: 'en_production',        label: 'En production' },
-  { value: 'expediee',             label: 'Expédiée / Prête' },
-  { value: 'livree',               label: 'Livrée' },
-  { value: 'annulee',              label: 'Annulée' },
+  { value: 'demande_recue',           label: 'Demande reçue' },
+  { value: 'devis_envoye',            label: 'Devis envoyé' },
+  { value: 'en_attente_validation',   label: 'En attente de validation' },
+  { value: 'validé',                  label: 'Devis validé' },
+  { value: 'production',              label: 'En production' },
+  { value: 'expédié',                 label: 'Expédié' },
+  { value: 'livré',                   label: 'Livré' },
+  { value: 'cancelled',               label: 'Annulée' },
 ]
 
 const ORDER_STATUS_COLORS = {
-  demande_recue:        'bg-gray-100 text-gray-700',
-  devis_envoye:         'bg-blue-100 text-blue-700',
-  devis_valide:         'bg-indigo-100 text-indigo-700',
-  maquette_preparation: 'bg-yellow-100 text-yellow-700',
-  maquette_validee:     'bg-orange-100 text-orange-700',
-  en_production:        'bg-purple-100 text-purple-700',
-  expediee:             'bg-teal-100 text-teal-700',
-  livree:               'bg-green-100 text-green-700',
-  annulee:              'bg-red-100 text-red-700',
+  demande_recue:         'bg-gray-100 text-gray-700',
+  devis_envoye:          'bg-blue-100 text-blue-700',
+  en_attente_validation: 'bg-yellow-100 text-yellow-700',
+  validé:                'bg-indigo-100 text-indigo-700',
+  production:            'bg-purple-100 text-purple-700',
+  expédié:               'bg-teal-100 text-teal-700',
+  livré:                 'bg-green-100 text-green-700',
+  cancelled:             'bg-red-100 text-red-700',
 }
 
 const QR_STATUS_COLORS = {
@@ -171,7 +169,7 @@ export default function Admin() {
     const now = new Date()
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
     const caMonth = ordersData
-      .filter(o => o.status === 'livree' && o.created_at >= startOfMonth)
+      .filter(o => o.status === 'livré' && o.created_at >= startOfMonth)
       .reduce((sum, o) => sum + Number(o.total_ttc || 0), 0)
 
     const demandesMois = reqData.filter(r => r.created_at >= startOfMonth).length
@@ -183,7 +181,7 @@ export default function Admin() {
     setStats({
       demandes:  demandesMois,
       devis:     quotesData.filter(q => ['draft', 'sent'].includes(q.status)).length,
-      commandes: ordersData.filter(o => !['livree', 'annulee'].includes(o.status)).length,
+      commandes: ordersData.filter(o => !['livré', 'cancelled'].includes(o.status)).length,
       ca:        caMonth,
     })
     setDataLoading(false)
@@ -239,7 +237,7 @@ export default function Admin() {
     const { error } = await supabase.from('orders').insert({
       order_number: orderNum,
       quote_id:     quote.id,
-      status:       'devis_valide',
+      status:       'validé',
       total_ttc:    quote.total_ttc,
       total_ht:     quote.total_ht,
     })

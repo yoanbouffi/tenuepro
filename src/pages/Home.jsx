@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { DevisButton } from '../components/DevisButton'
 
 const arguments_ = [
   {
@@ -140,12 +141,12 @@ export default function Home() {
               Des tenues qui reflètent votre identité, livrées en 10 à 15 jours.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-4">
-              <Link to="/devis" className="btn-primary text-base py-3.5 px-8 justify-center">
+              <DevisButton className="btn-primary text-base py-3.5 px-8 justify-center">
                 Demander un devis gratuit
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
-              </Link>
+              </DevisButton>
               <Link to="/realisations" className="btn-secondary text-base py-3.5 px-8 justify-center">
                 Voir les réalisations
               </Link>
@@ -253,9 +254,9 @@ export default function Home() {
                       </li>
                     ))}
                   </ul>
-                  <Link to="/devis" className="block text-center btn-primary w-full justify-center">
+                  <DevisButton className="block text-center btn-primary w-full justify-center">
                     Choisir ce pack
-                  </Link>
+                  </DevisButton>
                 </div>
               </div>
             ))}
@@ -297,9 +298,9 @@ export default function Home() {
             ))}
           </div>
           <div className="text-center mt-12">
-            <Link to="/devis" className="btn-primary text-base py-3.5 px-10">
+            <DevisButton className="btn-primary text-base py-3.5 px-10">
               Démarrer maintenant — c'est gratuit
-            </Link>
+            </DevisButton>
           </div>
         </div>
       </section>
@@ -346,17 +347,16 @@ export default function Home() {
             On s'occupe de tout à La Réunion.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              to="/devis"
+            <DevisButton
               className="bg-white text-[#7C3AED] font-bold px-8 py-4 rounded-lg hover:bg-gray-100 transition-colors text-base shadow-lg"
             >
               Demander mon devis gratuit
-            </Link>
+            </DevisButton>
             <a
-              href="tel:+262692000000"
+              href="tel:+262692105217"
               className="border-2 border-white text-white font-bold px-8 py-4 rounded-lg hover:bg-white/10 transition-colors text-base"
             >
-              +262 692 00 00 00
+              +262 692 10 52 17
             </a>
           </div>
         </div>

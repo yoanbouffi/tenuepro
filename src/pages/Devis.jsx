@@ -1,5 +1,6 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../hooks/useAuth'
 import { submitDevisForm } from '../lib/webhook'
 
 const secteurs = [
@@ -42,6 +43,36 @@ const initialForm = {
 }
 
 export default function Devis() {
+  const navigate = useNavigate()
+  const { user, loading: authLoading } = useAuth()
+
+  // ─── PROTECTION: Rediriger si non connecté ───────────────────────────────────
+  useEffect(() => {
+    // Si chargement terminé ET pas d'utilisateur → rediriger vers login
+    if (!authLoading && !user) {
+      console.log('❌ Utilisateur non connecté sur /devis, redirection vers /login')
+      navigate('/login', { state: { from: '/devis' } })
+    }
+  }, [user, authLoading, navigate])
+
+  // Si en train de charger l'authentification
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full mx-auto mb-4" />
+          <p className="text-gray-600">Vérification de votre connexion...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Si pas connecté (pendant la redirection)
+  if (!user) {
+    return null
+  }
+
+  // ─── LE FORMULAIRE DE DEVIS COMMENCE ICI ───────────────────────────────────
   const [form, setForm] = useState(initialForm)
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
