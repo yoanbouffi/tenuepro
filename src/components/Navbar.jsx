@@ -37,7 +37,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link title="Retour à l'accueil" to="/" className="flex items-center gap-2 flex-shrink-0 group">
             <img
-              src="https://res.cloudinary.com/djq5gqxmj/image/upload/v1776790674/Tenuepro_logo-01_ljmuen.png"
+              src="https://res.cloudinary.com/djq5gqxmj/image/upload/v1776791593/Logo-Tp_2x_f0ouhx.png"
               alt="TenuePro"
               className="h-9 w-auto object-contain transition-transform group-hover:scale-105"
             />
