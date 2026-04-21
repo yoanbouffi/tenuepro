@@ -26,7 +26,7 @@ const marquages = [
   { id: 'ne_sait_pas', label: 'Je ne sais pas encore', desc: 'On vous conseille' },
 ]
 
-const quantites = ['Moins de 10', '10 à 30', '31 à 50', '51 à 100', 'Plus de 100']
+const QUANTITY_PRESETS = [10, 20, 30, 50, 100]
 
 const delais = [
   'Le plus vite possible (urgent)',
@@ -106,7 +106,8 @@ export default function Devis() {
     if (!form.telephone.trim()) e.telephone = 'Le téléphone est requis'
     if (!form.secteur) e.secteur = 'Veuillez sélectionner votre secteur'
     if (form.produits.length === 0) e.produits = 'Sélectionnez au moins un produit'
-    if (!form.quantite) e.quantite = 'Veuillez estimer la quantité'
+    const qty = parseInt(form.quantite, 10)
+    if (!form.quantite || isNaN(qty) || qty < 1) e.quantite = 'Veuillez indiquer une quantité (minimum 1)'
     return e
   }
 
@@ -128,7 +129,7 @@ export default function Devis() {
       siret:         form.siret,
       sector:        form.secteur,
       products:      form.produits,
-      quantity:      form.quantite,
+      quantity:      parseInt(form.quantite, 10),
       description:   form.description,
       deadline:      form.delai,
       logo_url:      null,
@@ -391,22 +392,38 @@ export default function Devis() {
               <div>
                 <h2 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
                   <span className="w-7 h-7 bg-[#7C3AED] rounded-full text-white text-xs font-bold flex items-center justify-center">5</span>
-                  Quantité estimée *
+                  Quantité souhaitée *
                 </h2>
-                <div className="mt-3 space-y-2 ml-9">
-                  {quantites.map(q => (
-                    <label key={q} className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="quantite"
-                        value={q}
-                        checked={form.quantite === q}
-                        onChange={handleChange}
-                        className="accent-[#7C3AED]"
-                      />
-                      <span className="text-sm text-gray-700">{q}</span>
-                    </label>
-                  ))}
+                <p className="text-sm text-gray-500 mb-3 ml-9">Nombre exact de pièces</p>
+                <div className="ml-9">
+                  <input
+                    type="number"
+                    name="quantite"
+                    value={form.quantite}
+                    onChange={handleChange}
+                    placeholder="Ex : 25"
+                    min="1"
+                    step="1"
+                    onKeyDown={(e) => ['e','E','+','-','.'].includes(e.key) && e.preventDefault()}
+                    className={`w-full px-4 py-3 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/40 focus:border-[#7C3AED] hover:border-gray-300 transition-colors ${errors.quantite ? 'border-red-500' : 'border-gray-200'}`}
+                  />
+                  {/* Suggestions rapides */}
+                  <div className="flex gap-2 mt-2 flex-wrap">
+                    {QUANTITY_PRESETS.map(n => (
+                      <button
+                        key={n}
+                        type="button"
+                        onClick={() => setForm(prev => ({ ...prev, quantite: String(n) }))}
+                        className={`px-3 py-1 rounded-lg text-xs font-semibold border transition-colors ${
+                          form.quantite === String(n)
+                            ? 'bg-[#7C3AED] text-white border-[#7C3AED]'
+                            : 'bg-white text-gray-600 border-gray-200 hover:border-[#7C3AED] hover:text-[#7C3AED]'
+                        }`}
+                      >
+                        {n}
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 {errors.quantite && <p className="text-red-500 text-xs mt-2 ml-9">{errors.quantite}</p>}
               </div>
