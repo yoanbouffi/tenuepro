@@ -39,8 +39,11 @@ export default function Navbar() {
             <img
               src="https://res.cloudinary.com/djq5gqxmj/image/upload/v1776791593/Logo-Tp_2x_f0ouhx.png"
               alt="TenuePro"
-              className="h-9 w-auto object-contain transition-transform group-hover:scale-105"
+              className="h-8 w-auto object-contain transition-transform group-hover:scale-105"
             />
+            <span className="font-extrabold text-xl text-gray-900 tracking-tight">
+              Tenue<span className="text-[#7C3AED]">Pro</span>
+            </span>
           </Link>
 
           {/* Nav Desktop (Liens) */}

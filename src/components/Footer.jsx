@@ -11,8 +11,11 @@ export default function Footer() {
               <img
                 src="https://res.cloudinary.com/djq5gqxmj/image/upload/v1776791593/Logo-Tp_2x_f0ouhx.png"
                 alt="TenuePro"
-                className="h-9 w-auto object-contain brightness-0 invert"
+                className="h-8 w-auto object-contain brightness-0 invert"
               />
+              <span className="font-extrabold text-xl text-white">
+                Tenue<span className="text-[#7C3AED]">Pro</span>
+              </span>
             </div>
             <p className="text-gray-400 text-sm leading-relaxed max-w-xs">
               Votre spécialiste en broderie et flocage professionnel à La Réunion.
