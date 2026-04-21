@@ -26,8 +26,6 @@ const marquages = [
   { id: 'ne_sait_pas', label: 'Je ne sais pas encore', desc: 'On vous conseille' },
 ]
 
-const QUANTITY_PRESETS = [10, 20, 30, 50, 100]
-
 const delais = [
   'Le plus vite possible (urgent)',
   'Sous 3 semaines',
@@ -38,7 +36,7 @@ const delais = [
 
 const initialForm = {
   nom: '', prenom: '', entreprise: '', siret: '', email: '', telephone: '',
-  secteur: '', produits: [], marquage: '', quantite: '', delai: '',
+  secteur: '', produits: [], marquage: '', quantities: {}, delai: '',
   description: '', logo: null,
 }
 
@@ -85,12 +83,21 @@ export default function Devis() {
   }
 
   const handleCheckbox = (id) => {
-    setForm(prev => ({
-      ...prev,
-      produits: prev.produits.includes(id)
-        ? prev.produits.filter(p => p !== id)
-        : [...prev.produits, id],
-    }))
+    setForm(prev => {
+      const isSelected = prev.produits.includes(id)
+      const newQuantities = { ...prev.quantities }
+      if (isSelected) delete newQuantities[id]
+      return {
+        ...prev,
+        produits: isSelected ? prev.produits.filter(p => p !== id) : [...prev.produits, id],
+        quantities: newQuantities,
+      }
+    })
+  }
+
+  const handleQuantityChange = (productId, value) => {
+    setForm(prev => ({ ...prev, quantities: { ...prev.quantities, [productId]: value } }))
+    if (errors.quantite) setErrors(prev => ({ ...prev, quantite: '' }))
   }
 
   const handleFile = (e) => {
@@ -106,8 +113,11 @@ export default function Devis() {
     if (!form.telephone.trim()) e.telephone = 'Le téléphone est requis'
     if (!form.secteur) e.secteur = 'Veuillez sélectionner votre secteur'
     if (form.produits.length === 0) e.produits = 'Sélectionnez au moins un produit'
-    const qty = parseInt(form.quantite, 10)
-    if (!form.quantite || isNaN(qty) || qty < 1) e.quantite = 'Veuillez indiquer une quantité (minimum 1)'
+    const missingQty = form.produits.some(id => {
+      const q = parseInt(form.quantities[id], 10)
+      return !form.quantities[id] || isNaN(q) || q < 1
+    })
+    if (missingQty) e.quantite = 'Veuillez indiquer une quantité pour chaque produit sélectionné'
     return e
   }
 
@@ -129,7 +139,9 @@ export default function Devis() {
       siret:         form.siret,
       sector:        form.secteur,
       products:      form.produits,
-      quantity:      parseInt(form.quantite, 10),
+      quantity:      Object.fromEntries(
+        form.produits.map(id => [id, parseInt(form.quantities[id], 10)])
+      ),
       description:   form.description,
       deadline:      form.delai,
       logo_url:      null,
@@ -162,8 +174,12 @@ export default function Devis() {
             personnalisé <strong>sous 24 heures</strong> à l'adresse <strong>{form.email}</strong>.
           </p>
           <div className="bg-gray-50 rounded-xl p-4 mb-8 text-left text-sm text-gray-600 space-y-1">
-            <p>Produits : {form.produits.map(p => produits.find(x => x.id === p)?.label).join(', ')}</p>
-            <p>Quantité estimée : {form.quantite}</p>
+            {form.produits.map(id => {
+              const label = produits.find(x => x.id === id)?.label ?? id
+              return (
+                <p key={id}>{label} : <strong>{form.quantities[id]} pièce{form.quantities[id] > 1 ? 's' : ''}</strong></p>
+              )
+            })}
             <p>Délai souhaité : {form.delai || 'Non précisé'}</p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -324,31 +340,55 @@ export default function Devis() {
               </h2>
               <p className="text-sm text-gray-500 mb-4 ml-9">Quel(s) produit(s) ?</p>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {produits.map(p => (
-                  <label
-                    key={p.id}
-                    className={`p-3 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
-                      form.produits.includes(p.id)
-                        ? 'border-[#7C3AED] bg-violet-50'
-                        : 'border-gray-200 hover:border-gray-300 bg-white'
-                    }`}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={form.produits.includes(p.id)}
-                      onChange={() => handleCheckbox(p.id)}
-                      className="accent-[#7C3AED] cursor-pointer"
-                    />
-                    <p className="text-sm font-medium text-gray-900 ml-2 inline">{p.label}</p>
-                    {form.produits.includes(p.id) && (
-                      <svg className="w-4 h-4 text-[#7C3AED] float-right mt-0.5">
-                        <path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
-                      </svg>
-                    )}
-                  </label>
-                ))}
+                {produits.map(p => {
+                  const selected = form.produits.includes(p.id)
+                  return (
+                    <div
+                      key={p.id}
+                      className={`rounded-xl border-2 transition-all duration-200 ${
+                        selected ? 'border-[#7C3AED] bg-violet-50' : 'border-gray-200 hover:border-gray-300 bg-white'
+                      }`}
+                    >
+                      {/* Ligne sélection */}
+                      <label className="flex items-center gap-2 cursor-pointer p-3">
+                        <input
+                          type="checkbox"
+                          checked={selected}
+                          onChange={() => handleCheckbox(p.id)}
+                          className="accent-[#7C3AED] cursor-pointer flex-shrink-0"
+                        />
+                        <span className="text-sm font-medium text-gray-900 flex-1 leading-tight">{p.label}</span>
+                        {selected && (
+                          <svg className="w-4 h-4 text-[#7C3AED] flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
+                          </svg>
+                        )}
+                      </label>
+                      {/* Champ quantité si sélectionné */}
+                      {selected && (
+                        <div className="px-3 pb-3">
+                          <input
+                            type="number"
+                            min="1"
+                            step="1"
+                            value={form.quantities[p.id] || ''}
+                            onChange={e => handleQuantityChange(p.id, e.target.value)}
+                            onKeyDown={e => ['e','E','+','-','.'].includes(e.key) && e.preventDefault()}
+                            placeholder="Qté"
+                            className={`w-full px-3 py-1.5 border rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/40 focus:border-[#7C3AED] ${
+                              errors.quantite && !form.quantities[p.id]
+                                ? 'border-red-400'
+                                : 'border-[#7C3AED]/30'
+                            }`}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
               {errors.produits && <p className="text-red-500 text-xs mt-2">{errors.produits}</p>}
+              {errors.quantite && <p className="text-red-500 text-xs mt-1">{errors.quantite}</p>}
             </div>
 
             <hr className="border-gray-100" />
@@ -387,67 +427,26 @@ export default function Devis() {
 
             <hr className="border-gray-100" />
 
-            {/* Quantité + Délai */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div>
-                <h2 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
-                  <span className="w-7 h-7 bg-[#7C3AED] rounded-full text-white text-xs font-bold flex items-center justify-center">5</span>
-                  Quantité souhaitée *
-                </h2>
-                <p className="text-sm text-gray-500 mb-3 ml-9">Nombre exact de pièces</p>
-                <div className="ml-9">
-                  <input
-                    type="number"
-                    name="quantite"
-                    value={form.quantite}
-                    onChange={handleChange}
-                    placeholder="Ex : 25"
-                    min="1"
-                    step="1"
-                    onKeyDown={(e) => ['e','E','+','-','.'].includes(e.key) && e.preventDefault()}
-                    className={`w-full px-4 py-3 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/40 focus:border-[#7C3AED] hover:border-gray-300 transition-colors ${errors.quantite ? 'border-red-500' : 'border-gray-200'}`}
-                  />
-                  {/* Suggestions rapides */}
-                  <div className="flex gap-2 mt-2 flex-wrap">
-                    {QUANTITY_PRESETS.map(n => (
-                      <button
-                        key={n}
-                        type="button"
-                        onClick={() => setForm(prev => ({ ...prev, quantite: String(n) }))}
-                        className={`px-3 py-1 rounded-lg text-xs font-semibold border transition-colors ${
-                          form.quantite === String(n)
-                            ? 'bg-[#7C3AED] text-white border-[#7C3AED]'
-                            : 'bg-white text-gray-600 border-gray-200 hover:border-[#7C3AED] hover:text-[#7C3AED]'
-                        }`}
-                      >
-                        {n}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                {errors.quantite && <p className="text-red-500 text-xs mt-2 ml-9">{errors.quantite}</p>}
-              </div>
-
-              <div>
-                <h2 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
-                  <span className="w-7 h-7 bg-[#7C3AED] rounded-full text-white text-xs font-bold flex items-center justify-center">6</span>
-                  Délai souhaité
-                </h2>
-                <div className="mt-3 space-y-2 ml-9">
-                  {delais.map(d => (
-                    <label key={d} className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="delai"
-                        value={d}
-                        checked={form.delai === d}
-                        onChange={handleChange}
-                        className="accent-[#7C3AED]"
-                      />
-                      <span className="text-sm text-gray-700">{d}</span>
-                    </label>
-                  ))}
-                </div>
+            {/* Délai */}
+            <div>
+              <h2 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
+                <span className="w-7 h-7 bg-[#7C3AED] rounded-full text-white text-xs font-bold flex items-center justify-center">5</span>
+                Délai souhaité
+              </h2>
+              <div className="mt-3 space-y-2 ml-9">
+                {delais.map(d => (
+                  <label key={d} className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="delai"
+                      value={d}
+                      checked={form.delai === d}
+                      onChange={handleChange}
+                      className="accent-[#7C3AED]"
+                    />
+                    <span className="text-sm text-gray-700">{d}</span>
+                  </label>
+                ))}
               </div>
             </div>
 
