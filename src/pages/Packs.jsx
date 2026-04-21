@@ -9,7 +9,7 @@ const packs = [
     oldPrice: 340,
     saving: 50,
     gradient: 'from-amber-500 to-amber-700',
-    image: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=800&q=80',
+    image: 'https://res.cloudinary.com/djq5gqxmj/image/upload/v1776790598/Packstarter_tug8cg.png',
     description: 'La solution idéale pour se lancer. 10 polos brodés avec votre logo poitrine pour une image professionnelle dès le premier jour.',
     includes: [
       '10 polos manches courtes (coloris au choix)',
@@ -31,7 +31,7 @@ const packs = [
     saving: 100,
     gradient: 'from-[#7C3AED] to-violet-800',
     badge: 'Populaire',
-    image: 'https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=800&q=80',
+    image: 'https://res.cloudinary.com/djq5gqxmj/image/upload/v1776790598/PackEquipe_q6tl0f.png',
     description: 'La formule complète pour une brigade homogène. Logo brodé + prénom personnalisé + flocage dos pour une identité visuelle forte.',
     includes: [
       '30 polos manches courtes ou longues',
@@ -53,7 +53,7 @@ const packs = [
     oldPrice: 1590,
     saving: 300,
     gradient: 'from-gray-800 to-gray-950',
-    image: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=800&q=80',
+    image: 'https://res.cloudinary.com/djq5gqxmj/image/upload/v1776790598/PackPremium_cobrdq.png',
     description: 'La solution globale pour les grandes équipes. Mix de produits, broderie et flocage recto-verso pour une identité professionnelle complète.',
     includes: [
       '50 pièces mixtes au choix (polos, tabliers, casquettes)',

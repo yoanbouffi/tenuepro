@@ -8,12 +8,11 @@ export default function Footer() {
           {/* Brand */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 bg-[#7C3AED] rounded-lg flex items-center justify-center">
-                <span className="text-white font-extrabold text-sm">TP</span>
-              </div>
-              <span className="font-extrabold text-xl text-white">
-                Tenue<span className="text-[#7C3AED]">Pro</span>
-              </span>
+              <img
+                src="https://res.cloudinary.com/djq5gqxmj/image/upload/v1776790674/Tenuepro_logo-01_ljmuen.png"
+                alt="TenuePro"
+                className="h-9 w-auto object-contain brightness-0 invert"
+              />
             </div>
             <p className="text-gray-400 text-sm leading-relaxed max-w-xs">
               Votre spécialiste en broderie et flocage professionnel à La Réunion.

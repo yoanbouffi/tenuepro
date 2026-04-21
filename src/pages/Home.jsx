@@ -178,7 +178,7 @@ export default function Home() {
               {/* Second image card - Détail broderie/flocage */}
               <div className="absolute -bottom-6 -left-6 w-44 h-44 rounded-2xl overflow-hidden shadow-xl border-2 border-white -rotate-3">
                 <img
-                  src="https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=400&q=80"
+                  src="https://res.cloudinary.com/djq5gqxmj/image/upload/v1776790598/image_qrcy6w.png"
                   alt="Détail broderie logo polo"
                   className="w-full h-full object-cover"
                 />

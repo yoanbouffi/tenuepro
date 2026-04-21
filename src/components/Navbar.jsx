@@ -36,12 +36,11 @@ export default function Navbar() {
           
           {/* Logo */}
           <Link title="Retour à l'accueil" to="/" className="flex items-center gap-2 flex-shrink-0 group">
-            <div className="w-8 h-8 bg-[#7C3AED] rounded-lg flex items-center justify-center transition-transform group-hover:scale-105">
-              <span className="text-white font-extrabold text-sm">TP</span>
-            </div>
-            <span className="font-extrabold text-xl text-gray-900 tracking-tight">
-              Tenue<span className="text-[#7C3AED]">Pro</span>
-            </span>
+            <img
+              src="https://res.cloudinary.com/djq5gqxmj/image/upload/v1776790674/Tenuepro_logo-01_ljmuen.png"
+              alt="TenuePro"
+              className="h-9 w-auto object-contain transition-transform group-hover:scale-105"
+            />
           </Link>
 
           {/* Nav Desktop (Liens) */}
