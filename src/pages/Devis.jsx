@@ -79,6 +79,9 @@ export default function Devis() {
   const [errors, setErrors] = useState({})
   const [webhookError, setWebhookError] = useState(false)
 
+  // ─── Scroll en haut à chaque arrivée sur la page ────────────────────────────
+  useEffect(() => { window.scrollTo(0, 0) }, [])
+
   // ─── Pré-remplissage si un pack est sélectionné ──────────────────────────────
   useEffect(() => {
     if (!selectedPack) return
