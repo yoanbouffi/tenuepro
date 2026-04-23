@@ -177,8 +177,7 @@ export default function Packs() {
                       <p className="text-sm text-gray-600">⏱️ {pack.delay}</p>
                     </div>
                     <Link
-                      to="/devis"
-                      state={{ pack: pack.name }}
+                      to={`/devis?pack=${pack.id}`}
                       className="btn-primary w-full justify-center mt-4"
                     >
                       Choisir ce pack

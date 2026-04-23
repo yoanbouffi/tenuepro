@@ -330,46 +330,64 @@ export default function Admin() {
 
   // ─── Actions factures ────────────────────────────────────────────────────────
   const handleCreateInvoice = async () => {
-  if (!invOrderId || !invTotalHT) { setInvError('Remplissez tous les champs.'); return }
-  setInvLoading(true)
-  setInvError('')
-  const invNum = 'FAC-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random() * 9000) + 1000)
-  const totalHT  = parseFloat(invTotalHT)
-  const totalTTC = +(totalHT * 1.085).toFixed(2) // TVA 8.5% DOM
-  
-  const { data: newInvoice, error } = await supabase.from('invoices').insert({
-    invoice_number: invNum,
-    order_id:       invOrderId,
-    status:         'unpaid',
-    total_ht:       totalHT,
-    total_ttc:      totalTTC,
-  }).select()
-  
-  if (error) {
-    setInvError('Erreur : ' + error.message)
+    if (!invOrderId || !invTotalHT) { setInvError('Remplissez tous les champs.'); return }
+    setInvLoading(true)
+    setInvError('')
+
+    const invNum = 'FAC-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random() * 9000) + 1000)
+    const totalHT  = parseFloat(invTotalHT)
+    const totalTTC = +(totalHT * 1.085).toFixed(2) // TVA 8.5% DOM
+
+    const { data: newInvoice, error } = await supabase.from('invoices').insert({
+      invoice_number: invNum,
+      order_id:       invOrderId,
+      status:         'unpaid',
+      total_ht:       totalHT,
+      total_ttc:      totalTTC,
+    }).select()
+
+    if (error) {
+      setInvError('Erreur : ' + error.message)
+      setInvLoading(false)
+      return
+    }
+
+    // ========== GÉNÉRER PDF VIA N8N ==========
+    console.log('🚀 Envoi à n8n pour génération PDF...', newInvoice[0].id)
+    try {
+      const pdfResponse = await fetch(N8N_PDF_FACTURE_WEBHOOK, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ invoice_id: newInvoice[0].id }),
+      })
+
+      if (pdfResponse.ok) {
+        const pdfBlob = await pdfResponse.blob()
+        console.log('✅ PDF reçu de n8n, taille:', pdfBlob.size, 'bytes')
+
+        const url = window.URL.createObjectURL(pdfBlob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = `${invNum}.pdf`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
+
+        console.log('✅ PDF téléchargé automatiquement!')
+      } else {
+        console.error('⚠️ Erreur PDF n8n:', pdfResponse.status, pdfResponse.statusText)
+      }
+    } catch (pdfErr) {
+      console.error('⚠️ Erreur lors de la génération PDF:', pdfErr)
+    }
+
+    setShowInvModal(false)
+    setInvOrderId('')
+    setInvTotalHT('')
+    loadData()
     setInvLoading(false)
-    return
   }
-  
-  // ✅ NOUVEAU : Déclencher le workflow n8n de génération PDF
-  try {
-    await fetch(N8N_PDF_FACTURE_WEBHOOK, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ invoice_id: newInvoice[0].id }),
-    })
-    console.log('✅ Workflow PDF facture déclenché pour:', invNum)
-  } catch (err) {
-    console.error('⚠️ Erreur déclenchement PDF:', err)
-    // Pas de blocage si le PDF échoue, la facture est créée
-  }
-  
-  setShowInvModal(false)
-  setInvOrderId('')
-  setInvTotalHT('')
-  loadData()
-  setInvLoading(false)
-}
 
   // ─── Helpers validité devis ──────────────────────────────────────────────────
   const isExpired = (createdAt) =>
@@ -974,7 +992,7 @@ export default function Admin() {
                 disabled={invLoading}
                 className={`w-full flex items-center justify-center gap-2 bg-[#7C3AED] text-white font-semibold py-2.5 rounded-xl hover:bg-[#6D28D9] transition-colors text-sm ${invLoading ? 'opacity-60 cursor-not-allowed' : ''}`}
               >
-                {invLoading ? 'Création…' : 'Créer la facture'}
+                {invLoading ? '⏳ Génération PDF…' : '✅ Créer & Générer PDF'}
               </button>
             </div>
           </div>

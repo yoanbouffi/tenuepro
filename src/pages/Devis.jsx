@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { submitDevisForm } from '../lib/webhook'
 
@@ -34,6 +34,30 @@ const delais = [
   'Pas de contrainte particulière',
 ]
 
+const PACK_CONFIG = {
+  starter: {
+    label: 'Pack Starter',
+    summary: '10 polos',
+    produits: ['polos'],
+    quantities: { polos: 10 },
+    marquage: 'broderie',
+  },
+  equipe: {
+    label: 'Pack Équipe',
+    summary: '30 polos',
+    produits: ['polos'],
+    quantities: { polos: 30 },
+    marquage: 'les_deux',
+  },
+  premium: {
+    label: 'Pack Premium',
+    summary: '50 pièces mixtes (polos, tabliers, casquettes)',
+    produits: ['polos', 'tabliers', 'casquettes'],
+    quantities: { polos: 25, tabliers: 15, casquettes: 10 },
+    marquage: 'les_deux',
+  },
+}
+
 const initialForm = {
   nom: '', prenom: '', entreprise: '', siret: '', email: '', telephone: '',
   secteur: '', produits: [], marquage: '', quantities: {}, delai: '',
@@ -45,19 +69,34 @@ export default function Devis() {
   const { user, loading: authLoading } = useAuth()
 
   // ─── LES HOOKS DOIVENT ÊTRE APPELÉS AU DÉBUT DU COMPOSANT ───────────────────────────────────
+  const [searchParams] = useSearchParams()
+  const packParam  = searchParams.get('pack')
+  const selectedPack = PACK_CONFIG[packParam] ?? null
+
   const [form, setForm] = useState(initialForm)
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({})
   const [webhookError, setWebhookError] = useState(false)
 
+  // ─── Pré-remplissage si un pack est sélectionné ──────────────────────────────
+  useEffect(() => {
+    if (!selectedPack) return
+    setForm(prev => ({
+      ...prev,
+      produits:   [...selectedPack.produits],
+      quantities: { ...selectedPack.quantities },
+      marquage:   selectedPack.marquage,
+    }))
+  }, [packParam]) // eslint-disable-line react-hooks/exhaustive-deps
+
   // ─── PROTECTION: Rediriger si non connecté ───────────────────────────────────
   useEffect(() => {
     if (!authLoading && !user) {
       console.log('❌ Utilisateur non connecté sur /devis, redirection vers /login')
-      navigate('/login', { state: { from: '/devis' } })
+      navigate('/login', { state: { from: `/devis${packParam ? `?pack=${packParam}` : ''}` } })
     }
-  }, [user, authLoading, navigate])
+  }, [user, authLoading, navigate, packParam])
 
   // Si en train de charger l'authentification
   if (authLoading) {
@@ -217,6 +256,33 @@ export default function Devis() {
               <p className="text-red-700 text-sm">
                 Une erreur s'est produite lors de l'envoi. Veuillez réessayer.
               </p>
+            </div>
+          )}
+
+          {/* ── Bandeau pack sélectionné ── */}
+          {selectedPack && (
+            <div className="mb-6 flex items-center justify-between gap-4 p-4 bg-violet-50 border border-[#7C3AED]/30 rounded-xl">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 bg-[#7C3AED] rounded-full flex items-center justify-center flex-shrink-0">
+                  <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="font-semibold text-[#7C3AED] text-sm leading-tight">
+                    {selectedPack.label} sélectionné
+                  </p>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    {selectedPack.summary} — formulaire pré-rempli, vous pouvez modifier
+                  </p>
+                </div>
+              </div>
+              <Link
+                to="/packs"
+                className="text-xs font-medium text-[#7C3AED] underline underline-offset-2 hover:text-violet-800 flex-shrink-0 transition-colors"
+              >
+                Changer de pack
+              </Link>
             </div>
           )}
 
