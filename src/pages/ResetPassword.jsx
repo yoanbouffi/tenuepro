@@ -2,11 +2,11 @@ import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
-// États possibles de la page
-// 'checking'  → on attend la détection du token recovery
-// 'ready'     → token valide, afficher le formulaire
-// 'invalid'   → lien expiré ou invalide
-// 'success'   → mot de passe mis à jour
+// États de la page :
+// 'checking' → vérification du token recovery
+// 'ready'    → token valide, formulaire actif
+// 'invalid'  → lien expiré ou absent
+// 'success'  → mot de passe mis à jour
 
 export default function ResetPassword() {
   const navigate = useNavigate()
@@ -18,46 +18,39 @@ export default function ResetPassword() {
   const [loading,         setLoading]         = useState(false)
   const [error,           setError]           = useState('')
 
-  // ─── Détection de la session recovery ─────────────────────────────────────
+  // ─── Détection du contexte recovery ──────────────────────────────────────────
   useEffect(() => {
-    // Supabase JS v2 parse automatiquement le hash (#access_token=…&type=recovery)
-    // et émet un event PASSWORD_RECOVERY dans onAuthStateChange.
-    // On écoute aussi getSession() au cas où la page serait rechargée après
-    // que Supabase ait déjà traité le hash.
+    let resolved = false
 
-    let handled = false
+    const resolve = (state) => {
+      if (resolved) return
+      resolved = true
+      setPageState(state)
+    }
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'PASSWORD_RECOVERY' && session && !handled) {
-        handled = true
-        setPageState('ready')
-      }
+    // 1. Vérification directe du hash URL (méthode la plus rapide)
+    //    Supabase envoie : /reset-password#access_token=...&type=recovery
+    const hash   = window.location.hash
+    const params = new URLSearchParams(hash.replace(/^#/, ''))
+    if (params.get('type') === 'recovery' && params.get('access_token')) {
+      resolve('ready')
+    }
+
+    // 2. Écouter l'event PASSWORD_RECOVERY (Supabase JS le fire quand il parse le hash)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') resolve('ready')
     })
 
-    // Vérification immédiate : si une session active existe déjà
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (handled) return
-      if (session) {
-        // Session active — on peut afficher le formulaire seulement si
-        // l'URL contient type=recovery (rechargement de page)
-        const hash   = window.location.hash
-        const params = new URLSearchParams(hash.replace('#', '?'))
-        if (params.get('type') === 'recovery') {
-          handled = true
-          setPageState('ready')
-          return
-        }
-      }
-      // Aucun token recovery détecté au bout de 3s → lien invalide / expiré
-      setTimeout(() => {
-        if (!handled) setPageState('invalid')
-      }, 3000)
-    })
+    // 3. Fallback : si aucun des deux ne détecte le token après 4s → lien invalide
+    const timer = setTimeout(() => resolve('invalid'), 4000)
 
-    return () => subscription.unsubscribe()
+    return () => {
+      subscription.unsubscribe()
+      clearTimeout(timer)
+    }
   }, [])
 
-  // ─── Mise à jour du mot de passe ───────────────────────────────────────────
+  // ─── Soumission du nouveau mot de passe ──────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
@@ -76,15 +69,15 @@ export default function ResetPassword() {
     setLoading(false)
 
     if (updateError) {
-      setError('Erreur lors de la mise à jour. Réessayez ou demandez un nouveau lien.')
+      setError('Erreur lors de la mise à jour. Le lien a peut-être expiré.')
     } else {
       setPageState('success')
-      // Redirection automatique vers l'espace client après 3 s
       setTimeout(() => navigate('/espace-client'), 3000)
     }
   }
 
-  // ─── Rendu selon l'état ─────────────────────────────────────────────────────
+  // ─── Indicateur de force du mot de passe ─────────────────────────────────────
+  const strength = password.length === 0 ? 0 : password.length < 6 ? 1 : password.length < 10 ? 2 : 3
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 pt-16">
@@ -108,7 +101,7 @@ export default function ResetPassword() {
         {pageState === 'checking' && (
           <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-10 text-center">
             <div className="animate-spin w-10 h-10 border-4 border-[#7C3AED] border-t-transparent rounded-full mx-auto mb-4" />
-            <p className="text-gray-600 text-sm">Vérification du lien de réinitialisation…</p>
+            <p className="text-gray-500 text-sm">Vérification du lien de réinitialisation…</p>
           </div>
         )}
 
@@ -126,7 +119,7 @@ export default function ResetPassword() {
               Les liens expirent après 1 heure.
             </p>
             <Link
-              to="/login"
+              to="/forgot-password"
               className="inline-flex items-center gap-2 bg-[#7C3AED] text-white font-semibold px-6 py-2.5 rounded-xl hover:bg-[#6D28D9] transition-colors text-sm"
             >
               Faire une nouvelle demande
@@ -156,7 +149,7 @@ export default function ResetPassword() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">
                     Nouveau mot de passe{' '}
-                    <span className="text-gray-400 font-normal">(6 caractères minimum)</span>
+                    <span className="text-gray-400 font-normal">(min. 6 caractères)</span>
                   </label>
                   <div className="relative">
                     <input
@@ -171,6 +164,28 @@ export default function ResetPassword() {
                     />
                     <EyeToggle show={showPassword} onToggle={() => setShowPassword(v => !v)} />
                   </div>
+                  {/* Indicateur de force */}
+                  {password.length > 0 && (
+                    <div className="mt-2">
+                      <div className="flex gap-1">
+                        {[1, 2, 3].map(i => (
+                          <div
+                            key={i}
+                            className={`h-1 flex-1 rounded-full transition-colors ${
+                              i <= strength
+                                ? strength === 1 ? 'bg-red-400'
+                                : strength === 2 ? 'bg-yellow-400'
+                                : 'bg-green-400'
+                                : 'bg-gray-200'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <p className="text-xs text-gray-400 mt-1">
+                        {strength === 1 ? 'Trop court' : strength === 2 ? 'Moyen' : 'Bon'}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 <div>
@@ -194,38 +209,12 @@ export default function ResetPassword() {
                   )}
                 </div>
 
-                {/* Indicateur de force */}
-                {password.length > 0 && (
-                  <div>
-                    <div className="flex gap-1 mb-1">
-                      {[1, 2, 3].map(i => (
-                        <div
-                          key={i}
-                          className={`h-1 flex-1 rounded-full transition-colors ${
-                            password.length >= 6 && i === 1 ? 'bg-orange-400' :
-                            password.length >= 10 && i === 2 ? 'bg-yellow-400' :
-                            password.length >= 14 && i === 3 ? 'bg-green-400' :
-                            i === 1 && password.length >= 6 ? 'bg-orange-400' :
-                            'bg-gray-200'
-                          }`}
-                        />
-                      ))}
-                    </div>
-                    <p className="text-xs text-gray-400">
-                      {password.length < 6 ? 'Trop court' :
-                       password.length < 10 ? 'Moyen' :
-                       password.length < 14 ? 'Bon' : 'Excellent'}
-                    </p>
-                  </div>
-                )}
-
                 <button
                   type="submit"
-                  disabled={loading || password !== confirmPassword || password.length < 6}
+                  disabled={loading || password.length < 6 || password !== confirmPassword}
                   className={`w-full flex items-center justify-center gap-2 bg-[#7C3AED] text-white font-semibold py-3 rounded-xl hover:bg-[#6D28D9] transition-colors text-sm ${
-                    (loading || password !== confirmPassword || password.length < 6)
-                      ? 'opacity-60 cursor-not-allowed'
-                      : ''
+                    (loading || password.length < 6 || password !== confirmPassword)
+                      ? 'opacity-60 cursor-not-allowed' : ''
                   }`}
                 >
                   {loading ? (
@@ -253,7 +242,7 @@ export default function ResetPassword() {
             </div>
             <h1 className="text-xl font-extrabold text-gray-900 mb-2">Mot de passe mis à jour !</h1>
             <p className="text-sm text-gray-500 mb-6">
-              Vous allez être redirigé vers votre espace client dans quelques secondes…
+              Redirection vers votre espace client dans 3 secondes…
             </p>
             <Link
               to="/espace-client"
@@ -268,14 +257,12 @@ export default function ResetPassword() {
   )
 }
 
-// ─── Sous-composant œil ────────────────────────────────────────────────────────
 function EyeToggle({ show, onToggle }) {
   return (
     <button
       type="button"
       onClick={onToggle}
       className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-      title={show ? 'Masquer' : 'Afficher'}
     >
       {show ? (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>

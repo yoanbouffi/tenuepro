@@ -10,6 +10,7 @@ import Login from './pages/Login'
 import EspaceClient from './pages/EspaceClient'
 import Admin from './pages/Admin'
 import ResetPassword from './pages/ResetPassword'
+import ForgotPassword from './pages/ForgotPassword'
 
 export default function App() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
             <Route path="/espace-client"         element={<EspaceClient />} />
             <Route path="/admin-tenuepro-2026"   element={<Admin />} />
             <Route path="/reset-password"        element={<ResetPassword />} />
+            <Route path="/forgot-password"       element={<ForgotPassword />} />
           </Routes>
         </main>
         <Footer />

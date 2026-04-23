@@ -107,19 +107,6 @@ export default function Login() {
     }
   }
 
-  // ─── Réinitialisation mot de passe ───────────────────────────────────────────
-  const handleResetPassword = async () => {
-    if (!email.trim()) {
-      setError('Saisissez votre email pour réinitialiser le mot de passe.')
-      return
-    }
-    await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: `${window.location.origin}/reset-password`,
-    })
-    setError('')
-    setSuccessMsg('Un email de réinitialisation a été envoyé.')
-  }
-
   const isLogin  = mode === 'login'
   const isSignup = mode === 'signup'
 
@@ -218,9 +205,9 @@ export default function Login() {
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="block text-sm font-medium text-gray-700">Mot de passe</label>
-                  <button type="button" onClick={handleResetPassword} className="text-xs text-[#7C3AED] hover:underline">
+                  <Link to="/forgot-password" className="text-xs text-[#7C3AED] hover:underline">
                     Mot de passe oublié ?
-                  </button>
+                  </Link>
                 </div>
                 <div className="relative">
                   <input

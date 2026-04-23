@@ -11,7 +11,10 @@ export const useAuth = () => {
       setLoading(false)
     })
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      // PASSWORD_RECOVERY ne doit PAS être traité comme une connexion normale.
+      // ResetPassword.jsx gère cet event lui-même.
+      if (event === 'PASSWORD_RECOVERY') return
       setUser(session?.user ?? null)
     })
 
@@ -27,5 +30,12 @@ export const useAuth = () => {
     await supabase.auth.signOut()
   }
 
-  return { user, loading, signIn, signOut }
+  const resetPasswordForEmail = async (email) => {
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/reset-password`,
+    })
+    return { data, error }
+  }
+
+  return { user, loading, signIn, signOut, resetPasswordForEmail }
 }
