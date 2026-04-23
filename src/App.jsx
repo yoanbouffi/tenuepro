@@ -9,6 +9,7 @@ import CGV from './pages/CGV'
 import Login from './pages/Login'
 import EspaceClient from './pages/EspaceClient'
 import Admin from './pages/Admin'
+import ResetPassword from './pages/ResetPassword'
 
 export default function App() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
             <Route path="/login"                  element={<Login />} />
             <Route path="/espace-client"         element={<EspaceClient />} />
             <Route path="/admin-tenuepro-2026"   element={<Admin />} />
+            <Route path="/reset-password"        element={<ResetPassword />} />
           </Routes>
         </main>
         <Footer />

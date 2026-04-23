@@ -113,7 +113,9 @@ export default function Login() {
       setError('Saisissez votre email pour réinitialiser le mot de passe.')
       return
     }
-    await supabase.auth.resetPasswordForEmail(email.trim())
+    await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/reset-password`,
+    })
     setError('')
     setSuccessMsg('Un email de réinitialisation a été envoyé.')
   }
