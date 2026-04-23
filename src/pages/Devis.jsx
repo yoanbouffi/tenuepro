@@ -182,44 +182,47 @@ export default function Devis() {
     let mockupUrls    = []
 
     if (form.logo) {
-      setLoadingMsg('Upload du logo en cours…')
+      setLoadingMsg('⏳ Upload du logo en cours…')
       try {
         const upload = await uploadLogoToCloudinary(form.logo)
         if (upload) {
           logoUrl      = upload.url
           logoPublicId = upload.public_id
-          // ── 2. Construire les URLs de maquettes via overlay Cloudinary ────
+          console.log('✅ Logo uploadé :', logoPublicId)
+
+          // ── 2. Générer les maquettes avec le logo ─────────────────────────
+          setLoadingMsg('⏳ Génération des maquettes…')
           mockupUrls = buildAllMockupUrls(logoPublicId, form.produits)
+          console.log('✅ Maquettes générées :', mockupUrls)
         }
       } catch (err) {
-        // Non bloquant : on continue sans maquettes
-        console.warn('Upload logo échoué, demande soumise sans maquettes :', err.message)
+        console.error('❌ Erreur upload logo :', err)
+        // Non-bloquant : on continue sans logo
       }
     }
 
-    // ── 3. Soumettre la demande ───────────────────────────────────────────────
-    setLoadingMsg('Envoi de votre demande…')
+    // ── 3. Soumettre le formulaire avec logo + maquettes ─────────────────────
+    setLoadingMsg('⏳ Envoi de votre demande…')
     const result = await submitDevisForm({
-      contact_name:   `${form.prenom} ${form.nom}`.trim(),
-      contact_email:  form.email,
-      contact_phone:  form.telephone,
-      company_name:   form.entreprise,
-      siret:          form.siret,
-      sector:         form.secteur,
-      products:       form.produits,
-      quantity:       Object.fromEntries(
-        form.produits.map(id => [id, parseInt(form.quantities[id], 10)])
-      ),
-      description:    form.description,
-      deadline:       form.delai,
-      logo_url:       logoUrl,
-      logo_public_id: logoPublicId,
-      mockup_urls:    mockupUrls,
+      contact_name:      `${form.prenom} ${form.nom}`.trim(),
+      contact_email:     form.email,
+      contact_phone:     form.telephone,
+      company_name:      form.entreprise,
+      siret:             form.siret,
+      sector:            form.secteur,
+      products:          form.produits,
+      quantity:          JSON.stringify(form.quantities),
+      description:       form.description,
+      deadline:          form.delai,
+      marquage:          form.marquage,
+      logo_url:          logoUrl,
+      logo_public_id:    logoPublicId,
+      mockup_urls:       mockupUrls,
     })
 
     setLoading(false)
     setLoadingMsg('')
-
+    
     if (result.success) {
       setSubmitted(true)
       window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -247,13 +250,10 @@ export default function Devis() {
             personnalisé <strong>sous 24 heures</strong> à l'adresse <strong>{form.email}</strong>.
           </p>
           <div className="bg-gray-50 rounded-xl p-4 mb-8 text-left text-sm text-gray-600 space-y-1">
-            {form.produits.map(id => {
-              const label = produits.find(x => x.id === id)?.label ?? id
-              return (
-                <p key={id}>{label} : <strong>{form.quantities[id]} pièce{form.quantities[id] > 1 ? 's' : ''}</strong></p>
-              )
-            })}
-            <p>Délai souhaité : {form.delai || 'Non précisé'}</p>
+            <p><strong>Produits :</strong> {form.produits.map(p => produits.find(x => x.id === p)?.label).join(', ')}</p>
+            <p><strong>Quantités :</strong> {Object.entries(form.quantities).map(([id, qty]) => `${produits.find(p => p.id === id)?.label}: ${qty}`).join(', ')}</p>
+            <p><strong>Marquage :</strong> {marquages.find(m => m.id === form.marquage)?.label}</p>
+            <p><strong>Délai :</strong> {form.delai || 'Non précisé'}</p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button
@@ -272,138 +272,57 @@ export default function Devis() {
   }
 
   return (
-    <div className="pt-16">
-      {/* Header */}
-      <section className="bg-[#7C3AED] text-white py-12 text-center">
-        <div className="max-w-3xl mx-auto px-4">
-          <h1 className="text-4xl font-extrabold mb-3">Demande de devis</h1>
-          <p className="text-violet-100">Complétez ce formulaire, et recevez une maquette gratuite sous 24h</p>
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+      <section className="pt-16 pb-16 px-4 sm:px-6 lg:px-8 max-w-3xl mx-auto">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-black text-gray-900 mb-4">Demande de devis personnalisée</h1>
+          <p className="text-lg text-gray-600">
+            Décrivez votre projet et nous préparerons pour vous des maquettes de vos produits brodés/floqués.
+          </p>
         </div>
-      </section>
 
-      {/* Formulaire */}
-      <section className="py-12 bg-gray-50 min-h-screen">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6">
-          {/* Erreur webhook */}
-          {webhookError && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-700 text-sm">
-                Une erreur s'est produite lors de l'envoi. Veuillez réessayer.
-              </p>
-            </div>
-          )}
+        {webhookError && (
+          <div className="mb-8 bg-red-50 border border-red-200 rounded-xl p-4 text-red-700">
+            <p className="font-semibold">❌ Erreur lors de l'envoi</p>
+            <p className="text-sm mt-1">Veuillez vérifier votre connexion internet et réessayer.</p>
+          </div>
+        )}
 
-          {/* ── Bandeau pack sélectionné ── */}
-          {selectedPack && (
-            <div className="mb-6 flex items-center justify-between gap-4 p-4 bg-violet-50 border border-[#7C3AED]/30 rounded-xl">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 bg-[#7C3AED] rounded-full flex items-center justify-center flex-shrink-0">
-                  <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="font-semibold text-[#7C3AED] text-sm leading-tight">
-                    {selectedPack.label} sélectionné
-                  </p>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    {selectedPack.summary} — formulaire pré-rempli, vous pouvez modifier
-                  </p>
-                </div>
-              </div>
-              <Link
-                to="/packs"
-                className="text-xs font-medium text-[#7C3AED] underline underline-offset-2 hover:text-violet-800 flex-shrink-0 transition-colors"
-              >
-                Changer de pack
-              </Link>
-            </div>
-          )}
+        <div className="bg-white rounded-3xl shadow-lg p-8">
+          <form onSubmit={handleSubmit} className="bg-white rounded-3xl shadow-lg p-8 space-y-8">
 
-          <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-lg p-8 space-y-6">
-            {/* Coordonnées */}
+            {/* Infos personnelles */}
             <div>
               <h2 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
                 <span className="w-7 h-7 bg-[#7C3AED] rounded-full text-white text-xs font-bold flex items-center justify-center">1</span>
-                Vos coordonnées *
+                Vos coordonnées
               </h2>
-              <p className="text-sm text-gray-500 mb-4 ml-9">Pour qu'on vous recontacte rapidement</p>
-              <div className="grid grid-cols-2 gap-4 ml-0">
-                <div>
-                  <input
-                    type="text"
-                    name="prenom"
-                    value={form.prenom}
-                    onChange={handleChange}
-                    placeholder="Prénom"
-                    className={`w-full px-4 py-3 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/40 focus:border-[#7C3AED] hover:border-gray-300 transition-colors ${errors.prenom ? 'border-red-500' : 'border-gray-200'}`}
-                  />
-                  {errors.prenom && <p className="text-red-500 text-xs mt-1">{errors.prenom}</p>}
-                </div>
-                <div>
-                  <input
-                    type="text"
-                    name="nom"
-                    value={form.nom}
-                    onChange={handleChange}
-                    placeholder="Nom"
-                    className={`w-full px-4 py-3 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/40 focus:border-[#7C3AED] hover:border-gray-300 transition-colors ${errors.nom ? 'border-red-500' : 'border-gray-200'}`}
-                  />
-                  {errors.nom && <p className="text-red-500 text-xs mt-1">{errors.nom}</p>}
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4 mt-3 ml-0">
-                <div>
-                  <input
-                    type="email"
-                    name="email"
-                    value={form.email}
-                    onChange={handleChange}
-                    placeholder="Email"
-                    className={`w-full px-4 py-3 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/40 focus:border-[#7C3AED] hover:border-gray-300 transition-colors ${errors.email ? 'border-red-500' : 'border-gray-200'}`}
-                  />
-                  {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
-                </div>
-                <div>
-                  <input
-                    type="tel"
-                    name="telephone"
-                    value={form.telephone}
-                    onChange={handleChange}
-                    placeholder="Téléphone"
-                    className={`w-full px-4 py-3 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/40 focus:border-[#7C3AED] hover:border-gray-300 transition-colors ${errors.telephone ? 'border-red-500' : 'border-gray-200'}`}
-                  />
-                  {errors.telephone && <p className="text-red-500 text-xs mt-1">{errors.telephone}</p>}
-                </div>
-              </div>
-            </div>
-
-            <hr className="border-gray-100" />
-
-            {/* Entreprise */}
-            <div>
-              <h2 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
-                <span className="w-7 h-7 bg-[#7C3AED] rounded-full text-white text-xs font-bold flex items-center justify-center">2</span>
-                Votre entreprise / Organisation
-              </h2>
-              <p className="text-sm text-gray-500 mb-4 ml-9">Le nom et le SIRET (optionnel)</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 ml-0">
-                <input
-                  type="text"
-                  name="entreprise"
-                  value={form.entreprise}
-                  onChange={handleChange}
-                  placeholder="Nom de l'entreprise"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/40 focus:border-[#7C3AED] hover:border-gray-300 transition-colors"
-                />
-                <input
-                  type="text"
-                  name="siret"
-                  value={form.siret}
-                  onChange={handleChange}
-                  placeholder="SIRET"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/40 focus:border-[#7C3AED] hover:border-gray-300 transition-colors"
-                />
+              <p className="text-sm text-gray-500 mb-4 ml-9">Pour vous envoyer votre devis personnalisé</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {[
+                  { name: 'prenom',     label: 'Prénom *',                  placeholder: 'Jean',                  type: 'text',  span: false },
+                  { name: 'nom',        label: 'Nom *',                     placeholder: 'Dupont',                type: 'text',  span: false },
+                  { name: 'entreprise', label: 'Entreprise / Organisation',  placeholder: 'Restaurant Le Lagon',  type: 'text',  span: true  },
+                  { name: 'siret',      label: 'SIRET',                     placeholder: '12345678901234',        type: 'text',  span: true, maxLength: 14 },
+                  { name: 'email',      label: 'Email *',                   placeholder: 'jean@monentreprise.re', type: 'email', span: false },
+                  { name: 'telephone',  label: 'Téléphone *',               placeholder: '+262 692 XX XX XX',    type: 'tel',   span: false },
+                ].map(field => (
+                  <div key={field.name} className={field.span ? 'sm:col-span-2' : ''}>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
+                    <input
+                      type={field.type}
+                      name={field.name}
+                      value={form[field.name]}
+                      onChange={handleChange}
+                      placeholder={field.placeholder}
+                      maxLength={field.maxLength}
+                      className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/40 focus:border-[#7C3AED] transition-colors ${
+                        errors[field.name] ? 'border-red-400 bg-red-50' : 'border-gray-200'
+                      }`}
+                    />
+                    {errors[field.name] && <p className="text-red-500 text-xs mt-1">{errors[field.name]}</p>}
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -412,22 +331,24 @@ export default function Devis() {
             {/* Secteur */}
             <div>
               <h2 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
-                <span className="w-7 h-7 bg-[#7C3AED] rounded-full text-white text-xs font-bold flex items-center justify-center">3</span>
-                Secteur d'activité *
+                <span className="w-7 h-7 bg-[#7C3AED] rounded-full text-white text-xs font-bold flex items-center justify-center">2</span>
+                Secteur d'activité
               </h2>
-              <p className="text-sm text-gray-500 mb-4 ml-9">Quel est votre domaine ?</p>
+              <p className="text-sm text-gray-500 mb-4 ml-9">Pour mieux comprendre votre besoin</p>
               <select
                 name="secteur"
                 value={form.secteur}
                 onChange={handleChange}
-                className={`w-full px-4 py-3 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/40 focus:border-[#7C3AED] hover:border-gray-300 transition-colors ${errors.secteur ? 'border-red-500' : 'border-gray-200'}`}
+                className={`w-full px-4 py-3 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/40 focus:border-[#7C3AED] transition-colors ${
+                  errors.secteur ? 'border-red-400 bg-red-50' : 'border-gray-200'
+                }`}
               >
-                <option value="">Sélectionnez un secteur</option>
+                <option value="">-- Sélectionnez votre secteur --</option>
                 {secteurs.map(s => (
                   <option key={s} value={s}>{s}</option>
                 ))}
               </select>
-              {errors.secteur && <p className="text-red-500 text-xs mt-1">{errors.secteur}</p>}
+              {errors.secteur && <p className="text-red-500 text-xs mt-2">{errors.secteur}</p>}
             </div>
 
             <hr className="border-gray-100" />
@@ -436,21 +357,17 @@ export default function Devis() {
             <div>
               <h2 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
                 <span className="w-7 h-7 bg-[#7C3AED] rounded-full text-white text-xs font-bold flex items-center justify-center">3</span>
-                Vos produits *
+                Produits souhaités
               </h2>
-              <p className="text-sm text-gray-500 mb-4 ml-9">Quel(s) produit(s) ?</p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <p className="text-sm text-gray-500 mb-4 ml-9">Sélectionnez les produits et indiquez les quantités</p>
+              <div className="space-y-2">
                 {produits.map(p => {
                   const selected = form.produits.includes(p.id)
                   return (
-                    <div
-                      key={p.id}
-                      className={`rounded-xl border-2 transition-all duration-200 ${
-                        selected ? 'border-[#7C3AED] bg-violet-50' : 'border-gray-200 hover:border-gray-300 bg-white'
-                      }`}
-                    >
-                      {/* Ligne sélection */}
-                      <label className="flex items-center gap-2 cursor-pointer p-3">
+                    <div key={p.id} className={`border-2 rounded-xl p-3 transition-all duration-200 ${
+                      selected ? 'border-[#7C3AED] bg-violet-50' : 'border-gray-200 bg-white'
+                    }`}>
+                      <label className="flex items-center gap-3 cursor-pointer">
                         <input
                           type="checkbox"
                           checked={selected}
