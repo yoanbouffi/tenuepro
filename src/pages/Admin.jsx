@@ -55,16 +55,16 @@ const QUOTE_STATUS_LABELS = {
 }
 
 const INVOICE_STATUS_COLORS = {
-  draft:  'bg-gray-100 text-gray-600',
-  sent:   'bg-blue-100 text-blue-700',
-  paid:   'bg-green-100 text-green-700',
-  overdue:'bg-red-100 text-red-700',
+  unpaid:   'bg-gray-100 text-gray-600',
+  paid:    'bg-green-100 text-green-700',
+  overdue: 'bg-red-100 text-red-700',
+  cancelled: 'bg-orange-100 text-orange-700',
 }
 const INVOICE_STATUS_LABELS = {
-  draft:  'Brouillon',
-  sent:   'Envoyée',
-  paid:   'Payée',
-  overdue:'En retard',
+  unpaid:   'Non payée',
+  paid:    'Payée',
+  overdue: 'En retard',
+  cancelled: 'Annulée',
 }
 
 const fmt = (d) =>
@@ -72,6 +72,7 @@ const fmt = (d) =>
 
 const N8N_STATUS_WEBHOOK = 'https://n8n.srv1087606.hstgr.cloud/webhook/tenuepro-statut-change'
 const N8N_DEVIS_WEBHOOK  = 'https://n8n.srv1087606.hstgr.cloud/webhook/tenuepro-generer-devis'
+const N8N_PDF_FACTURE_WEBHOOK = 'https://n8n.srv1087606.hstgr.cloud/webhook/tenuepro-generer-pdf-facture'
 
 const VALIDITY_DAYS = 180
 
@@ -329,34 +330,46 @@ export default function Admin() {
 
   // ─── Actions factures ────────────────────────────────────────────────────────
   const handleCreateInvoice = async () => {
-    if (!invOrderId || !invTotalHT) { setInvError('Remplissez tous les champs.'); return }
-    setInvLoading(true)
-    setInvError('')
-    const invNum = 'FAC-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random() * 9000) + 1000)
-    const totalHT  = parseFloat(invTotalHT)
-    const totalTTC = +(totalHT * 1.085).toFixed(2) // TVA 8.5% DOM
-    const { error } = await supabase.from('invoices').insert({
-      invoice_number: invNum,
-      order_id:       invOrderId,
-      status:         'draft',
-      total_ht:       totalHT,
-      total_ttc:      totalTTC,
-    })
-    if (error) {
-      setInvError('Erreur : ' + error.message)
-    } else {
-      setShowInvModal(false)
-      setInvOrderId('')
-      setInvTotalHT('')
-      loadData()
-    }
+  if (!invOrderId || !invTotalHT) { setInvError('Remplissez tous les champs.'); return }
+  setInvLoading(true)
+  setInvError('')
+  const invNum = 'FAC-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random() * 9000) + 1000)
+  const totalHT  = parseFloat(invTotalHT)
+  const totalTTC = +(totalHT * 1.085).toFixed(2) // TVA 8.5% DOM
+  
+  const { data: newInvoice, error } = await supabase.from('invoices').insert({
+    invoice_number: invNum,
+    order_id:       invOrderId,
+    status:         'unpaid',
+    total_ht:       totalHT,
+    total_ttc:      totalTTC,
+  }).select()
+  
+  if (error) {
+    setInvError('Erreur : ' + error.message)
     setInvLoading(false)
+    return
   }
-
-  const handleInvoiceStatus = async (invId, newStatus) => {
-    await supabase.from('invoices').update({ status: newStatus }).eq('id', invId)
-    setInvoices(prev => prev.map(i => i.id === invId ? { ...i, status: newStatus } : i))
+  
+  // ✅ NOUVEAU : Déclencher le workflow n8n de génération PDF
+  try {
+    await fetch(N8N_PDF_FACTURE_WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ invoice_id: newInvoice[0].id }),
+    })
+    console.log('✅ Workflow PDF facture déclenché pour:', invNum)
+  } catch (err) {
+    console.error('⚠️ Erreur déclenchement PDF:', err)
+    // Pas de blocage si le PDF échoue, la facture est créée
   }
+  
+  setShowInvModal(false)
+  setInvOrderId('')
+  setInvTotalHT('')
+  loadData()
+  setInvLoading(false)
+}
 
   // ─── Helpers validité devis ──────────────────────────────────────────────────
   const isExpired = (createdAt) =>
@@ -808,7 +821,7 @@ export default function Admin() {
                           <td className="td font-semibold text-gray-900">{Number(inv.total_ttc ?? 0).toFixed(2)} €</td>
                           <td className="td">
                             <select
-                              value={inv.status ?? 'draft'}
+                              value={inv.status ?? 'unpaid'}
                               onChange={e => handleInvoiceStatus(inv.id, e.target.value)}
                               className={`text-xs font-semibold px-2 py-1 rounded-lg border-0 cursor-pointer focus:ring-2 focus:ring-[#7C3AED]/40 ${INVOICE_STATUS_COLORS[inv.status] ?? 'bg-gray-100 text-gray-600'}`}
                             >

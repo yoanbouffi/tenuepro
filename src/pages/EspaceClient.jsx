@@ -73,15 +73,17 @@ export default function EspaceClient() {
         // Factures
         const { data: invoicesData, error: invoicesErr } = await supabase
           .from('invoices')
-          .select('*, orders(order_number)')
-          .eq('client_id', user.id)
+          .select('*, orders(order_number, profile_id)')
           .order('created_at', { ascending: false })
+        
+        // Filtrer pour ne garder que les factures de l'utilisateur
+        const userInvoices = invoicesData?.filter(inv => inv.orders?.profile_id === user.id) ?? []
 
-        console.log('Factures:', invoicesData?.length || 0, invoicesErr)
+        console.log('Factures:', userInvoices.length, invoicesErr)
 
         setQuotes(quotesData ?? [])
         setOrders(ordersData ?? [])
-        setInvoices(invoicesData ?? [])
+        setInvoices(userInvoices)
       } catch (err) {
         console.error('Erreur chargement:', err)
       } finally {
@@ -347,16 +349,40 @@ export default function EspaceClient() {
                 ) : (
                   invoices.map(inv => (
                     <div key={inv.id} className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition">
-                      <div className="flex justify-between items-start">
+                      <div className="flex justify-between items-start mb-4">
                         <div>
                           <h3 className="text-lg font-bold text-gray-900">{inv.invoice_number}</h3>
                           <p className="text-sm text-gray-600">Commande: {inv.orders?.order_number || '—'}</p>
+                          <p className="text-sm text-gray-600">Date: {fmt(inv.created_at)}</p>
                         </div>
                         <div className="text-right">
                           <p className="text-2xl font-bold text-gray-900">{inv.total_ttc?.toFixed(2)}€</p>
-                          <p className="text-xs text-gray-500 mt-2">TTC</p>
+                          <p className="text-xs text-gray-500 mt-1">TTC</p>
+                          {/* Statut */}
+                          <span className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-medium ${
+                            inv.status === 'unpaid' ? 'bg-gray-100 text-gray-700' :
+                            inv.status === 'paid' ? 'bg-green-100 text-green-700' :
+                            inv.status === 'overdue' ? 'bg-red-100 text-red-700' :
+                            inv.status === 'cancelled' ? 'bg-orange-100 text-orange-700' :
+                            'bg-gray-100 text-gray-700'
+                          }`}>
+                            {inv.status === 'unpaid' ? 'Non payée' :
+                             inv.status === 'paid' ? 'Payée' :
+                             inv.status === 'overdue' ? 'En retard' :
+                             inv.status === 'cancelled' ? 'Annulée' :
+                             inv.status}
+                          </span>
                         </div>
                       </div>
+                      {inv.pdf_url && (
+                        <a
+                          href={inv.pdf_url}
+                          download
+                          className="inline-block px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition text-center"
+                        >
+                          📥 Télécharger PDF
+                        </a>
+                      )}
                     </div>
                   ))
                 )}
