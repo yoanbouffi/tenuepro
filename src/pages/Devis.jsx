@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import { submitDevisForm } from '../lib/webhook'
+import { submitDevisForm, uploadLogoToCloudinary } from '../lib/webhook'
+import { buildAllMockupUrls } from '../lib/mockups'
 
 const secteurs = [
   'Restauration', 'Hôtellerie', 'Commerce de détail', 'Sport & Loisirs',
@@ -78,6 +79,7 @@ export default function Devis() {
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({})
   const [webhookError, setWebhookError] = useState(false)
+  const [loadingMsg,   setLoadingMsg]   = useState('')
 
   // ─── Scroll en haut à chaque arrivée sur la page ────────────────────────────
   useEffect(() => { window.scrollTo(0, 0) }, [])
@@ -173,22 +175,51 @@ export default function Devis() {
     }
     setLoading(true)
     setWebhookError(false)
+
+    // ── 1. Upload logo vers Cloudinary ───────────────────────────────────────
+    let logoUrl       = null
+    let logoPublicId  = null
+    let mockupUrls    = []
+
+    if (form.logo) {
+      setLoadingMsg('Upload du logo en cours…')
+      try {
+        const upload = await uploadLogoToCloudinary(form.logo)
+        if (upload) {
+          logoUrl      = upload.url
+          logoPublicId = upload.public_id
+          // ── 2. Construire les URLs de maquettes via overlay Cloudinary ────
+          mockupUrls = buildAllMockupUrls(logoPublicId, form.produits)
+        }
+      } catch (err) {
+        // Non bloquant : on continue sans maquettes
+        console.warn('Upload logo échoué, demande soumise sans maquettes :', err.message)
+      }
+    }
+
+    // ── 3. Soumettre la demande ───────────────────────────────────────────────
+    setLoadingMsg('Envoi de votre demande…')
     const result = await submitDevisForm({
-      contact_name:  `${form.prenom} ${form.nom}`.trim(),
-      contact_email: form.email,
-      contact_phone: form.telephone,
-      company_name:  form.entreprise,
-      siret:         form.siret,
-      sector:        form.secteur,
-      products:      form.produits,
-      quantity:      Object.fromEntries(
+      contact_name:   `${form.prenom} ${form.nom}`.trim(),
+      contact_email:  form.email,
+      contact_phone:  form.telephone,
+      company_name:   form.entreprise,
+      siret:          form.siret,
+      sector:         form.secteur,
+      products:       form.produits,
+      quantity:       Object.fromEntries(
         form.produits.map(id => [id, parseInt(form.quantities[id], 10)])
       ),
-      description:   form.description,
-      deadline:      form.delai,
-      logo_url:      null,
+      description:    form.description,
+      deadline:       form.delai,
+      logo_url:       logoUrl,
+      logo_public_id: logoPublicId,
+      mockup_urls:    mockupUrls,
     })
+
     setLoading(false)
+    setLoadingMsg('')
+
     if (result.success) {
       setSubmitted(true)
       window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -592,7 +623,7 @@ export default function Devis() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                     </svg>
-                    Envoi en cours…
+                    {loadingMsg || 'Envoi en cours…'}
                   </>
                 ) : (
                   <>

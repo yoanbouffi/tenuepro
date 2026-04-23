@@ -1,0 +1,136 @@
+{
+  "name": "WF6 — Génération Maquettes Cloudinary",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "tenuepro-generer-maquettes",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [0, 0],
+      "webhookId": "wf6-tenuepro-maquettes-2026"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.logo_public_id }}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+      "name": "Valider logo_public_id",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [224, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const { logo_public_id, products, devis_id } = $input.first().json;\n\nconst CLOUD = 'djq5gqxmj';\n\n// Mapping produit → mockup de base + paramètres overlay\nconst MAPPING = {\n  polos:      { label: 'Polos',            base: 'tenuepro/mockups/polos-base',      w: 200, gravity: 'north_west', x: 80,  y: 80  },\n  tshirts:    { label: 'T-shirts',         base: 'tenuepro/mockups/tshirts-base',    w: 200, gravity: 'north_west', x: 80,  y: 80  },\n  vestes:     { label: 'Vestes & Sweats',  base: 'tenuepro/mockups/vestes-base',     w: 180, gravity: 'north_west', x: 60,  y: 60  },\n  casquettes: { label: 'Casquettes',       base: 'tenuepro/mockups/casquettes-base', w: 120, gravity: 'center',     x: 0,   y: -20 },\n  tabliers:   { label: 'Tabliers',         base: 'tenuepro/mockups/tabliers-base',   w: 160, gravity: 'north',      x: 0,   y: 80  },\n  chemises:   { label: 'Chemises',         base: 'tenuepro/mockups/chemises-base',   w: 180, gravity: 'north_west', x: 80,  y: 80  },\n  sacs:       { label: 'Sacs & Tote bags', base: 'tenuepro/mockups/sacs-base',       w: 200, gravity: 'center',     x: 0,   y: 0   },\n};\n\n// Encode le public_id pour Cloudinary (/ → :)\nconst encodeId = (id) => id.replace(/\\//g, ':');\n\nconst logoEncoded = encodeId(logo_public_id);\nconst productList = Array.isArray(products) ? products : [products];\n\nconst mockups = productList\n  .filter(id => MAPPING[id])\n  .map(id => {\n    const { label, base, w, gravity, x, y } = MAPPING[id];\n    const hasOffset = x !== 0 || y !== 0;\n    const transform = hasOffset\n      ? `l_${logoEncoded},w_${w},c_fit,g_${gravity},x_${x},y_${y}`\n      : `l_${logoEncoded},w_${w},c_fit,g_${gravity}`;\n    return {\n      product_id:  id,\n      product:     label,\n      mockup_url:  `https://res.cloudinary.com/${CLOUD}/image/upload/${transform}/${base}`,\n    };\n  });\n\nreturn [{\n  json: {\n    devis_id,\n    logo_public_id,\n    mockups,\n    generated_at: new Date().toISOString(),\n    count: mockups.length,\n  }\n}];"
+      },
+      "id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
+      "name": "Construire URLs maquettes",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [448, 0]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://mqkrniiktvnuqzlvrfib.supabase.co/rest/v1/quote_requests?id=eq.{{ $json.devis_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xa3JuaWlrdHZudXF6bHZyZmliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2NzIxOTksImV4cCI6MjA5MTI0ODE5OX0.XKPT0Ke0qLb8AQ5zi1lE9f-_Zh9uhFdTDctObOWeeso"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xa3JuaWlrdHZudXF6bHZyZmliIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTY3MjE5OSwiZXhwIjoyMDkxMjQ4MTk5fQ.GniLy8K7FWeI4jzK-A-9CIznqdpVHQqMWa-py_bXw3A"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ mockup_urls: $json.mockups }) }}",
+        "options": {}
+      },
+      "id": "d4e5f6a7-b8c9-0123-defa-234567890123",
+      "name": "Sauvegarder maquettes Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [672, 0]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, mockups: $('Construire URLs maquettes').item.json.mockups, count: $('Construire URLs maquettes').item.json.count, generated_at: $('Construire URLs maquettes').item.json.generated_at }) }}",
+        "options": {}
+      },
+      "id": "e5f6a7b8-c9d0-1234-efab-345678901234",
+      "name": "Réponse succès",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [896, 0]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"success\": false, \"message\": \"logo_public_id manquant\" }",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "id": "f6a7b8c9-d0e1-2345-fabc-456789012345",
+      "name": "Erreur logo manquant",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [448, 224]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [{ "node": "Valider logo_public_id", "type": "main", "index": 0 }]
+      ]
+    },
+    "Valider logo_public_id": {
+      "main": [
+        [{ "node": "Construire URLs maquettes",  "type": "main", "index": 0 }],
+        [{ "node": "Erreur logo manquant",        "type": "main", "index": 0 }]
+      ]
+    },
+    "Construire URLs maquettes": {
+      "main": [
+        [{ "node": "Sauvegarder maquettes Supabase", "type": "main", "index": 0 }]
+      ]
+    },
+    "Sauvegarder maquettes Supabase": {
+      "main": [
+        [{ "node": "Réponse succès", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "11f3f5daff577f57ecd846abf3b10002135106985f0b51d4128785eaf9a1ca35"
+  }
+}
