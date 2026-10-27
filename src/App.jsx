@@ -1,9 +1,9 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import Home from './pages/Home'
 import Packs from './pages/Packs'
-import Realisations from './pages/Realisations'
+import Solutions from './pages/Solutions'
 import Devis from './pages/Devis'
 import CGV from './pages/CGV'
 import Login from './pages/Login'
@@ -21,7 +21,8 @@ export default function App() {
           <Routes>
             <Route path="/"              element={<Home />} />
             <Route path="/packs"         element={<Packs />} />
-            <Route path="/realisations"  element={<Realisations />} />
+            <Route path="/solutions"     element={<Solutions />} />
+            <Route path="/realisations"  element={<Navigate to="/solutions" replace />} />
             <Route path="/devis"         element={<Devis />} />
             <Route path="/cgv"           element={<CGV />} />
             <Route path="/login"                  element={<Login />} />

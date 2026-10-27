@@ -1,563 +1,399 @@
-import { useState, useEffect } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { submitDevisForm, uploadLogoToCloudinary } from '../lib/webhook'
 import { buildAllMockupUrls } from '../lib/mockups'
+import { PIECES, EMPLACEMENTS, PACKS, SECTEURS, DELAIS, MINIMUM_PIECES, CONTACT, euro } from '../data/offre'
+import { Arrow } from '../components/ui'
 
-const secteurs = [
-  'Restauration', 'Hôtellerie', 'Commerce de détail', 'Sport & Loisirs',
-  'Santé & Bien-être', 'Associations & Événementiel', 'Bâtiment & Artisanat',
-  'Transport & Logistique', 'Services à la personne', 'Autre',
+const TECHNIQUES_CHOIX = [
+  { id: 'broderie', label: 'Broderie', desc: 'Logo cousu, rendu haut de gamme' },
+  { id: 'flocage', label: 'Flocage', desc: 'Textes, noms, numéros, une couleur' },
+  { id: 'dtf', label: 'Impression DTF', desc: 'Visuels en couleurs, grands formats' },
+  { id: 'les_deux', label: 'Plusieurs techniques', desc: 'Par exemple brodé devant, imprimé au dos' },
+  { id: 'ne_sait_pas', label: 'Conseillez-moi', desc: 'Nous choisissons avec vous' },
 ]
+const TECH_FROM_PACK = { broderie: 'broderie', flocage: 'flocage', dtf: 'dtf', mix: 'les_deux' }
 
-const produits = [
-  { id: 'polos', label: 'Polos' },
-  { id: 'tshirts', label: 'T-shirts' },
-  { id: 'vestes', label: 'Vestes & Sweats' },
-  { id: 'casquettes', label: 'Casquettes' },
-  { id: 'tabliers', label: 'Tabliers' },
-  { id: 'chemises', label: 'Chemises' },
-  { id: 'sacs', label: 'Sacs & Tote bags' },
-]
+const STEPS = ['Pièces', 'Marquage', 'Projet', 'Coordonnées']
 
-const marquages = [
-  { id: 'broderie', label: 'Broderie', desc: 'Relief cousu, haut de gamme' },
-  { id: 'flocage', label: 'Flocage', desc: 'Impression thermocollée' },
-  { id: 'les_deux', label: 'Les deux', desc: 'Broderie + flocage' },
-  { id: 'ne_sait_pas', label: 'Je ne sais pas encore', desc: 'On vous conseille' },
-]
-
-const delais = [
-  'Le plus vite possible (urgent)',
-  'Sous 3 semaines',
-  'Sous 1 mois',
-  'Sous 2 mois',
-  'Pas de contrainte particulière',
-]
-
-const PACK_CONFIG = {
-  starter: {
-    label: 'Pack Starter',
-    summary: '10 polos',
-    produits: ['polos'],
-    quantities: { polos: 10 },
-    marquage: 'broderie',
-  },
-  equipe: {
-    label: 'Pack Équipe',
-    summary: '30 polos',
-    produits: ['polos'],
-    quantities: { polos: 30 },
-    marquage: 'les_deux',
-  },
-  premium: {
-    label: 'Pack Premium',
-    summary: '50 pièces mixtes (polos, tabliers, casquettes)',
-    produits: ['polos', 'tabliers', 'casquettes'],
-    quantities: { polos: 25, tabliers: 15, casquettes: 10 },
-    marquage: 'les_deux',
-  },
-}
-
-const initialForm = {
-  nom: '', prenom: '', entreprise: '', siret: '', email: '', telephone: '',
-  secteur: '', produits: [], marquage: '', quantities: {}, delai: '',
-  description: '', logo: null,
+const initial = {
+  produits: [], quantities: {}, technique: '', emplacements: [], logo: null,
+  secteur: '', delai: '', tailles: '', description: '',
+  prenom: '', nom: '', entreprise: '', siret: '', email: '', telephone: '',
 }
 
 export default function Devis() {
-  const navigate = useNavigate()
-  const { user, loading: authLoading } = useAuth()
+  const [params] = useSearchParams()
+  const pack = PACKS.find((p) => p.id === params.get('pack')) || null
+  const { user } = useAuth()
 
-  // ─── LES HOOKS DOIVENT ÊTRE APPELÉS AU DÉBUT DU COMPOSANT ───────────────────────────────────
-  const [searchParams] = useSearchParams()
-  const packParam  = searchParams.get('pack')
-  const selectedPack = PACK_CONFIG[packParam] ?? null
-
-  const [form, setForm] = useState(initialForm)
-  const [submitted, setSubmitted] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const [form, setForm] = useState(initial)
+  const [step, setStep] = useState(0)
   const [errors, setErrors] = useState({})
-  const [webhookError, setWebhookError] = useState(false)
-  const [loadingMsg,   setLoadingMsg]   = useState('')
+  const [sending, setSending] = useState(false)
+  const [sendMsg, setSendMsg] = useState('')
+  const [sendError, setSendError] = useState(false)
+  const [done, setDone] = useState(false)
+  const topRef = useRef(null)
+  const logoPreview = useMemo(() => (form.logo?.type?.startsWith('image/') ? URL.createObjectURL(form.logo) : null), [form.logo])
+  useEffect(() => () => logoPreview && URL.revokeObjectURL(logoPreview), [logoPreview])
 
-  // ─── Scroll en haut à chaque arrivée sur la page ────────────────────────────
-  useEffect(() => { window.scrollTo(0, 0) }, [])
-
-  // ─── Pré-remplissage si un pack est sélectionné ──────────────────────────────
+  // Pré-remplissage depuis un pack, un métier, ou le compte client
   useEffect(() => {
-    if (!selectedPack) return
-    setForm(prev => ({
-      ...prev,
-      produits:   [...selectedPack.produits],
-      quantities: { ...selectedPack.quantities },
-      marquage:   selectedPack.marquage,
+    setForm((f) => ({
+      ...f,
+      ...(pack ? {
+        produits: [...pack.devis.produits],
+        quantities: { ...pack.devis.quantities },
+        technique: TECH_FROM_PACK[pack.devis.technique] || '',
+        emplacements: [...pack.devis.emplacements],
+      } : {}),
+      secteur: params.get('secteur') || f.secteur,
+      email: f.email || user?.email || '',
     }))
-  }, [packParam]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [pack?.id, user?.email]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ─── PROTECTION: Rediriger si non connecté ───────────────────────────────────
-  useEffect(() => {
-    if (!authLoading && !user) {
-      console.log('❌ Utilisateur non connecté sur /devis, redirection vers /login')
-      navigate('/login', { state: { from: `/devis${packParam ? `?pack=${packParam}` : ''}` } })
-    }
-  }, [user, authLoading, navigate, packParam])
-
-  // Si en train de charger l'authentification
-  if (authLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full mx-auto mb-4" />
-          <p className="text-gray-600">Vérification de votre connexion...</p>
-        </div>
-      </div>
-    )
+  const set = (k, v) => {
+    setForm((f) => ({ ...f, [k]: v }))
+    if (errors[k]) setErrors((e) => ({ ...e, [k]: '' }))
   }
+  const total = useMemo(
+    () => form.produits.reduce((s, id) => s + (parseInt(form.quantities[id], 10) || 0), 0),
+    [form.produits, form.quantities]
+  )
 
-  // Si pas connecté (pendant la redirection)
-  if (!user) {
-    return null
-  }
-
-  const handleChange = (e) => {
-    const { name, value } = e.target
-    setForm(prev => ({ ...prev, [name]: value }))
-    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }))
-  }
-
-  const handleCheckbox = (id) => {
-    setForm(prev => {
-      const isSelected = prev.produits.includes(id)
-      const newQuantities = { ...prev.quantities }
-      if (isSelected) delete newQuantities[id]
-      return {
-        ...prev,
-        produits: isSelected ? prev.produits.filter(p => p !== id) : [...prev.produits, id],
-        quantities: newQuantities,
-      }
+  const togglePiece = (id) => {
+    setForm((f) => {
+      const on = f.produits.includes(id)
+      const quantities = { ...f.quantities }
+      if (on) delete quantities[id]
+      else quantities[id] = quantities[id] || ''
+      return { ...f, produits: on ? f.produits.filter((p) => p !== id) : [...f.produits, id], quantities }
     })
+    setErrors((e) => ({ ...e, produits: '' }))
   }
+  const toggleEmplacement = (id) =>
+    set('emplacements', form.emplacements.includes(id) ? form.emplacements.filter((x) => x !== id) : [...form.emplacements, id])
 
-  const handleQuantityChange = (productId, value) => {
-    setForm(prev => ({ ...prev, quantities: { ...prev.quantities, [productId]: value } }))
-    if (errors.quantite) setErrors(prev => ({ ...prev, quantite: '' }))
-  }
-
-  const handleFile = (e) => {
-    const file = e.target.files[0]
-    if (file) setForm(prev => ({ ...prev, logo: file }))
-  }
-
-  const validate = () => {
+  const validate = (s) => {
     const e = {}
-    if (!form.nom.trim()) e.nom = 'Le nom est requis'
-    if (!form.prenom.trim()) e.prenom = 'Le prénom est requis'
-    if (!form.email.trim() || !/\S+@\S+\.\S+/.test(form.email)) e.email = 'Email invalide'
-    if (!form.telephone.trim()) e.telephone = 'Le téléphone est requis'
-    if (!form.secteur) e.secteur = 'Veuillez sélectionner votre secteur'
-    if (form.produits.length === 0) e.produits = 'Sélectionnez au moins un produit'
-    const missingQty = form.produits.some(id => {
-      const q = parseInt(form.quantities[id], 10)
-      return !form.quantities[id] || isNaN(q) || q < 1
-    })
-    if (missingQty) e.quantite = 'Veuillez indiquer une quantité pour chaque produit sélectionné'
-    return e
+    if (s === 0) {
+      if (!form.produits.length) e.produits = 'Choisissez au moins une pièce.'
+      else if (form.produits.some((id) => !(parseInt(form.quantities[id], 10) > 0))) e.produits = 'Indiquez une quantité pour chaque pièce choisie.'
+      else if (total < MINIMUM_PIECES) e.produits = `Le minimum est de ${MINIMUM_PIECES} pièces au total (actuellement ${total}).`
+    }
+    if (s === 1) {
+      if (!form.technique) e.technique = 'Choisissez une technique, ou « Conseillez-moi ».'
+      if (!form.emplacements.length) e.emplacements = 'Choisissez au moins un emplacement.'
+    }
+    if (s === 2) {
+      if (!form.secteur) e.secteur = 'Choisissez votre secteur.'
+    }
+    if (s === 3) {
+      if (!form.prenom.trim()) e.prenom = 'Indiquez votre prénom.'
+      if (!form.nom.trim()) e.nom = 'Indiquez votre nom.'
+      if (!form.entreprise.trim()) e.entreprise = 'Indiquez votre entreprise ou structure.'
+      if (!/^\S+@\S+\.\S+$/.test(form.email.trim())) e.email = 'Adresse e-mail invalide.'
+      if (form.telephone.replace(/\D/g, '').length < 9) e.telephone = 'Numéro de téléphone invalide.'
+    }
+    setErrors(e)
+    return !Object.keys(e).length
   }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    const errs = validate()
-    if (Object.keys(errs).length > 0) {
-      setErrors(errs)
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-      return
-    }
-    setLoading(true)
-    setWebhookError(false)
+  const scrollTop = () => topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  const next = () => { if (validate(step)) { setStep(step + 1); scrollTop() } }
+  const back = () => { setErrors({}); setStep(step - 1); scrollTop() }
 
-    // ── 1. Upload logo vers Cloudinary ───────────────────────────────────────
-    let logoUrl       = null
-    let logoPublicId  = null
-    let mockupUrls    = []
+  const handleSubmit = async (ev) => {
+    ev.preventDefault()
+    if (step < 3) return next()
+    if (!validate(3)) return
+    setSending(true); setSendError(false)
 
+    let logoUrl = null, logoPublicId = null, mockupUrls = []
     if (form.logo) {
-      setLoadingMsg('⏳ Upload du logo en cours…')
+      setSendMsg('Envoi du logo…')
       try {
-        const upload = await uploadLogoToCloudinary(form.logo)
-        if (upload) {
-          logoUrl      = upload.url
-          logoPublicId = upload.public_id
-          console.log('✅ Logo uploadé :', logoPublicId)
-
-          // ── 2. Générer les maquettes avec le logo ─────────────────────────
-          setLoadingMsg('⏳ Génération des maquettes…')
+        const up = await uploadLogoToCloudinary(form.logo)
+        if (up) {
+          logoUrl = up.url; logoPublicId = up.public_id
           mockupUrls = buildAllMockupUrls(logoPublicId, form.produits)
-          console.log('✅ Maquettes générées :', mockupUrls)
         }
-      } catch (err) {
-        console.error('❌ Erreur upload logo :', err)
-        // Non-bloquant : on continue sans logo
-      }
+      } catch (err) { console.error('Upload logo', err) /* non bloquant */ }
     }
 
-    // ── 3. Soumettre le formulaire avec logo + maquettes ─────────────────────
-    setLoadingMsg('⏳ Envoi de votre demande…')
+    const label = (list, id) => list.find((x) => x.id === id)?.label || id
+    const description = [
+      pack ? `Pack : ${pack.nom}` : null,
+      `Technique : ${label(TECHNIQUES_CHOIX, form.technique)}`,
+      `Emplacements : ${form.emplacements.map((id) => label(EMPLACEMENTS, id)).join(', ')}`,
+      form.tailles.trim() ? `Tailles : ${form.tailles.trim()}` : null,
+      form.description.trim() ? `\n${form.description.trim()}` : null,
+    ].filter(Boolean).join('\n')
+
+    setSendMsg('Envoi de votre demande…')
     const result = await submitDevisForm({
-      contact_name:      `${form.prenom} ${form.nom}`.trim(),
-      contact_email:     form.email,
-      contact_phone:     form.telephone,
-      company_name:      form.entreprise,
-      siret:             form.siret,
-      sector:            form.secteur,
-      products:          form.produits,
-      quantity:          JSON.stringify(form.quantities),
-      description:       form.description,
-      deadline:          form.delai,
-      marquage:          form.marquage,
-      logo_url:          logoUrl,
-      logo_public_id:    logoPublicId,
-      mockup_urls:       mockupUrls,
+      contact_name: `${form.prenom} ${form.nom}`.trim(),
+      contact_email: form.email.trim(),
+      contact_phone: form.telephone.trim(),
+      company_name: form.entreprise.trim(),
+      siret: form.siret.trim(),
+      sector: form.secteur,
+      products: form.produits,
+      quantity: JSON.stringify(Object.fromEntries(form.produits.map((id) => [id, parseInt(form.quantities[id], 10)]))),
+      description,
+      deadline: form.delai,
+      marquage: form.technique,
+      emplacements: form.emplacements,
+      pack: pack?.id || null,
+      logo_url: logoUrl,
+      logo_public_id: logoPublicId,
+      mockup_urls: mockupUrls,
     })
-
-    setLoading(false)
-    setLoadingMsg('')
-    
-    if (result.success) {
-      setSubmitted(true)
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-    } else {
-      setWebhookError(true)
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-    }
+    setSending(false); setSendMsg('')
+    if (result.success) { setDone(true); window.scrollTo({ top: 0 }) }
+    else setSendError(true)
   }
 
-  if (submitted) {
+  if (done) {
     return (
-      <div className="pt-16 min-h-screen bg-gray-50 flex items-center justify-center px-4">
-        <div className="bg-white rounded-3xl shadow-xl p-10 max-w-lg w-full text-center">
-          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg className="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
+      <section className="bg-paper pt-16">
+        <div className="wrap flex min-h-[70vh] items-center justify-center py-16">
+          <div className="relative w-full max-w-xl rounded-2xl bg-white p-10 text-center shadow-sm">
+            <span className="stitch-frame" aria-hidden="true" />
+            <p className="eyebrow">Demande envoyée</p>
+            <h1 className="mt-3 font-display text-3xl font-extrabold text-indigo">Merci {form.prenom}.</h1>
+            <p className="lead mt-4">
+              Nous étudions votre projet et revenons vers vous avec un devis détaillé et une maquette, à l’adresse <strong className="text-ink">{form.email}</strong>.
+            </p>
+            <p className="mt-4 text-sm text-ink-muted">Une question d’ici là ? <a className="btn-link" href={CONTACT.telHref}>{CONTACT.tel}</a></p>
+            <Link to="/" className="btn-primary mt-8">Retour à l’accueil</Link>
           </div>
-          <h2 className="text-2xl font-extrabold text-gray-900 mb-3">Demande envoyée !</h2>
-          <p className="text-gray-600 mb-2">
-            Merci <strong>{form.prenom} {form.nom}</strong> pour votre demande de devis.
-          </p>
-          <p className="text-gray-500 text-sm mb-8">
-            Notre équipe analyse votre projet et vous revient avec une maquette et un devis
-            personnalisé <strong>sous 24 heures</strong> à l'adresse <strong>{form.email}</strong>.
-          </p>
-          <div className="bg-gray-50 rounded-xl p-4 mb-8 text-left text-sm text-gray-600 space-y-1">
-            <p><strong>Produits :</strong> {form.produits.map(p => produits.find(x => x.id === p)?.label).join(', ')}</p>
-            <p><strong>Quantités :</strong> {Object.entries(form.quantities).map(([id, qty]) => `${produits.find(p => p.id === id)?.label}: ${qty}`).join(', ')}</p>
-            <p><strong>Marquage :</strong> {marquages.find(m => m.id === form.marquage)?.label}</p>
-            <p><strong>Délai :</strong> {form.delai || 'Non précisé'}</p>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <button
-              onClick={() => { setSubmitted(false); setForm(initialForm) }}
-              className="btn-outline justify-center"
-            >
-              Nouvelle demande
-            </button>
-            <Link to="/" className="btn-primary justify-center">
-              Retour à l'accueil
-            </Link>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
-      <section className="pt-16 pb-16 px-4 sm:px-6 lg:px-8 max-w-3xl mx-auto">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-black text-gray-900 mb-4">Demande de devis personnalisée</h1>
-          <p className="text-lg text-gray-600">
-            Décrivez votre projet et nous préparerons pour vous des maquettes de vos produits brodés/floqués.
-          </p>
-        </div>
-
-        {webhookError && (
-          <div className="mb-8 bg-red-50 border border-red-200 rounded-xl p-4 text-red-700">
-            <p className="font-semibold">❌ Erreur lors de l'envoi</p>
-            <p className="text-sm mt-1">Veuillez vérifier votre connexion internet et réessayer.</p>
-          </div>
-        )}
-
-        <div className="bg-white rounded-3xl shadow-lg p-8">
-          <form onSubmit={handleSubmit} className="bg-white rounded-3xl shadow-lg p-8 space-y-8">
-
-            {/* Infos personnelles */}
-            <div>
-              <h2 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
-                <span className="w-7 h-7 bg-[#7C3AED] rounded-full text-white text-xs font-bold flex items-center justify-center">1</span>
-                Vos coordonnées
-              </h2>
-              <p className="text-sm text-gray-500 mb-4 ml-9">Pour vous envoyer votre devis personnalisé</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {[
-                  { name: 'prenom',     label: 'Prénom *',                  placeholder: 'Jean',                  type: 'text',  span: false },
-                  { name: 'nom',        label: 'Nom *',                     placeholder: 'Dupont',                type: 'text',  span: false },
-                  { name: 'entreprise', label: 'Entreprise / Organisation',  placeholder: 'Restaurant Le Lagon',  type: 'text',  span: true  },
-                  { name: 'siret',      label: 'SIRET',                     placeholder: '12345678901234',        type: 'text',  span: true, maxLength: 14 },
-                  { name: 'email',      label: 'Email *',                   placeholder: 'jean@monentreprise.re', type: 'email', span: false },
-                  { name: 'telephone',  label: 'Téléphone *',               placeholder: '+262 692 XX XX XX',    type: 'tel',   span: false },
-                ].map(field => (
-                  <div key={field.name} className={field.span ? 'sm:col-span-2' : ''}>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
-                    <input
-                      type={field.type}
-                      name={field.name}
-                      value={form[field.name]}
-                      onChange={handleChange}
-                      placeholder={field.placeholder}
-                      maxLength={field.maxLength}
-                      className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/40 focus:border-[#7C3AED] transition-colors ${
-                        errors[field.name] ? 'border-red-400 bg-red-50' : 'border-gray-200'
-                      }`}
-                    />
-                    {errors[field.name] && <p className="text-red-500 text-xs mt-1">{errors[field.name]}</p>}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <hr className="border-gray-100" />
-
-            {/* Secteur */}
-            <div>
-              <h2 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
-                <span className="w-7 h-7 bg-[#7C3AED] rounded-full text-white text-xs font-bold flex items-center justify-center">2</span>
-                Secteur d'activité
-              </h2>
-              <p className="text-sm text-gray-500 mb-4 ml-9">Pour mieux comprendre votre besoin</p>
-              <select
-                name="secteur"
-                value={form.secteur}
-                onChange={handleChange}
-                className={`w-full px-4 py-3 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/40 focus:border-[#7C3AED] transition-colors ${
-                  errors.secteur ? 'border-red-400 bg-red-50' : 'border-gray-200'
-                }`}
-              >
-                <option value="">-- Sélectionnez votre secteur --</option>
-                {secteurs.map(s => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
-              {errors.secteur && <p className="text-red-500 text-xs mt-2">{errors.secteur}</p>}
-            </div>
-
-            <hr className="border-gray-100" />
-
-            {/* Produits */}
-            <div>
-              <h2 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
-                <span className="w-7 h-7 bg-[#7C3AED] rounded-full text-white text-xs font-bold flex items-center justify-center">3</span>
-                Produits souhaités
-              </h2>
-              <p className="text-sm text-gray-500 mb-4 ml-9">Sélectionnez les produits et indiquez les quantités</p>
-              <div className="space-y-2">
-                {produits.map(p => {
-                  const selected = form.produits.includes(p.id)
-                  return (
-                    <div key={p.id} className={`border-2 rounded-xl p-3 transition-all duration-200 ${
-                      selected ? 'border-[#7C3AED] bg-violet-50' : 'border-gray-200 bg-white'
-                    }`}>
-                      <label className="flex items-center gap-3 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={selected}
-                          onChange={() => handleCheckbox(p.id)}
-                          className="accent-[#7C3AED] cursor-pointer flex-shrink-0"
-                        />
-                        <span className="text-sm font-medium text-gray-900 flex-1 leading-tight">{p.label}</span>
-                        {selected && (
-                          <svg className="w-4 h-4 text-[#7C3AED] flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
-                          </svg>
-                        )}
-                      </label>
-                      {/* Champ quantité si sélectionné */}
-                      {selected && (
-                        <div className="px-3 pb-3">
-                          <input
-                            type="number"
-                            min="1"
-                            step="1"
-                            value={form.quantities[p.id] || ''}
-                            onChange={e => handleQuantityChange(p.id, e.target.value)}
-                            onKeyDown={e => ['e','E','+','-','.'].includes(e.key) && e.preventDefault()}
-                            placeholder="Qté"
-                            className={`w-full px-3 py-1.5 border rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/40 focus:border-[#7C3AED] ${
-                              errors.quantite && !form.quantities[p.id]
-                                ? 'border-red-400'
-                                : 'border-[#7C3AED]/30'
-                            }`}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
-              {errors.produits && <p className="text-red-500 text-xs mt-2">{errors.produits}</p>}
-              {errors.quantite && <p className="text-red-500 text-xs mt-1">{errors.quantite}</p>}
-            </div>
-
-            <hr className="border-gray-100" />
-
-            {/* Marquage */}
-            <div>
-              <h2 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
-                <span className="w-7 h-7 bg-[#7C3AED] rounded-full text-white text-xs font-bold flex items-center justify-center">4</span>
-                Type de marquage
-              </h2>
-              <p className="text-sm text-gray-500 mb-4 ml-9">Broderie, flocage, ou les deux ?</p>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {marquages.map(m => (
-                  <label
-                    key={m.id}
-                    className={`p-3 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
-                      form.marquage === m.id
-                        ? 'border-[#7C3AED] bg-violet-50'
-                        : 'border-gray-200 hover:border-gray-300 bg-white'
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="marquage"
-                      value={m.id}
-                      checked={form.marquage === m.id}
-                      onChange={handleChange}
-                      className="sr-only"
-                    />
-                    <p className="font-semibold text-sm text-gray-900">{m.label}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">{m.desc}</p>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <hr className="border-gray-100" />
-
-            {/* Délai */}
-            <div>
-              <h2 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
-                <span className="w-7 h-7 bg-[#7C3AED] rounded-full text-white text-xs font-bold flex items-center justify-center">5</span>
-                Délai souhaité
-              </h2>
-              <div className="mt-3 space-y-2 ml-9">
-                {delais.map(d => (
-                  <label key={d} className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="delai"
-                      value={d}
-                      checked={form.delai === d}
-                      onChange={handleChange}
-                      className="accent-[#7C3AED]"
-                    />
-                    <span className="text-sm text-gray-700">{d}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <hr className="border-gray-100" />
-
-            {/* Description */}
-            <div>
-              <h2 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
-                <span className="w-7 h-7 bg-[#7C3AED] rounded-full text-white text-xs font-bold flex items-center justify-center">7</span>
-                Décrivez votre projet
-              </h2>
-              <p className="text-sm text-gray-500 mb-4 ml-9">Couleurs, positionnement, textes, contraintes particulières…</p>
-              <textarea
-                name="description"
-                value={form.description}
-                onChange={handleChange}
-                rows={4}
-                placeholder="Ex : 20 polos blancs pour mon équipe de salle, logo brodé côté cœur, prénom en dessous, couleur bordeaux pour le fil…"
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/40 focus:border-[#7C3AED] hover:border-gray-300 transition-colors resize-none"
-              />
-            </div>
-
-            {/* Upload logo */}
-            <div>
-              <h2 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
-                <span className="w-7 h-7 bg-[#7C3AED] rounded-full text-white text-xs font-bold flex items-center justify-center">8</span>
-                Votre logo
-              </h2>
-              <p className="text-sm text-gray-500 mb-4 ml-9">Formats acceptés : SVG, AI, PDF, PNG haute résolution (max 10 Mo)</p>
-              <label className="block ml-0">
-                <div className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${
-                  form.logo ? 'border-[#7C3AED] bg-violet-50' : 'border-gray-300 hover:border-[#7C3AED] hover:bg-gray-50'
-                }`}>
-                  {form.logo ? (
-                    <div>
-                      <svg className="w-8 h-8 text-[#7C3AED] mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <p className="text-sm font-medium text-[#7C3AED]">{form.logo.name}</p>
-                      <p className="text-xs text-gray-500 mt-1">Cliquez pour changer</p>
-                    </div>
-                  ) : (
-                    <div>
-                      <svg className="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                      </svg>
-                      <p className="text-sm font-medium text-gray-700">Glissez votre logo ici</p>
-                      <p className="text-xs text-gray-500 mt-1">ou cliquez pour parcourir</p>
-                    </div>
-                  )}
-                </div>
-                <input
-                  type="file"
-                  accept=".svg,.ai,.pdf,.png,.jpg,.jpeg,.eps"
-                  onChange={handleFile}
-                  className="hidden"
-                />
-              </label>
-              <p className="text-xs text-gray-400 mt-2 ml-0">
-                Pas de logo pour l'instant ? Pas de problème — on peut le faire sans pour commencer.
-              </p>
-            </div>
-
-            {/* Submit */}
-            <div className="pt-2">
-              <button
-                type="submit"
-                disabled={loading}
-                className={`w-full btn-primary text-base py-4 justify-center ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
-              >
-                {loading ? (
-                  <>
-                    <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                    </svg>
-                    {loadingMsg || 'Envoi en cours…'}
-                  </>
-                ) : (
-                  <>
-                    Envoyer ma demande de devis
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                    </svg>
-                  </>
-                )}
-              </button>
-              <p className="text-xs text-gray-500 text-center mt-3">
-                En soumettant ce formulaire, vous acceptez d'être contacté par TenuePro concernant votre demande. Aucun démarchage.
-              </p>
-            </div>
-          </form>
         </div>
       </section>
-    </div>
+    )
+  }
+
+  const err = (k) => errors[k] && <p className="mt-2 text-sm font-medium text-[#B42318]" role="alert">{errors[k]}</p>
+
+  return (
+    <section className="bg-paper pt-16" ref={topRef}>
+      <div className="wrap py-10 md:py-14">
+        <p className="eyebrow">Demande de devis</p>
+        <h1 className="mt-3 font-display text-3xl font-extrabold tracking-tight text-indigo sm:text-4xl">Décrivez votre projet.</h1>
+        <p className="mt-2 text-ink-muted">Quatre étapes, deux minutes, sans création de compte.</p>
+
+        {/* Progression */}
+        <ol className="mt-8 grid grid-cols-4 gap-2" aria-label="Étapes">
+          {STEPS.map((s, i) => (
+            <li key={s} aria-current={i === step ? 'step' : undefined}>
+              <div className={`h-1.5 rounded-full ${i <= step ? 'bg-indigo' : 'bg-ink-line'}`} />
+              <p className={`mt-2 text-xs font-semibold sm:text-sm ${i === step ? 'text-indigo' : 'text-ink-muted'}`}>
+                <span className="hidden sm:inline">{i + 1}. </span>{s}
+              </p>
+            </li>
+          ))}
+        </ol>
+
+        <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_320px]">
+          <form onSubmit={handleSubmit} noValidate className="rounded-2xl border border-ink-line bg-white p-6 md:p-8">
+            {pack && step === 0 && (
+              <div className="mb-6 rounded-lg bg-indigo-mist px-4 py-3 text-sm text-indigo">
+                Pack <strong>{pack.nom}</strong> pré-rempli. Vous pouvez tout ajuster.
+              </div>
+            )}
+
+            {step === 0 && (
+              <fieldset>
+                <legend className="font-display text-xl font-bold text-indigo">Quelles pièces, et combien ?</legend>
+                <p className="mt-1 text-sm text-ink-muted">Minimum {MINIMUM_PIECES} pièces au total. Les tailles se précisent plus loin.</p>
+                <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
+                  {PIECES.map((p) => {
+                    const on = form.produits.includes(p.id)
+                    return (
+                      <div key={p.id} className={`overflow-hidden rounded-xl border-2 transition-colors ${on ? 'border-indigo' : 'border-ink-line hover:border-indigo/40'}`}>
+                        <button type="button" onClick={() => togglePiece(p.id)} aria-pressed={on} className="block w-full text-left">
+                          <img src={p.img} alt="" className="aspect-square w-full object-cover" />
+                          <span className="flex items-center justify-between gap-2 px-3 pt-2.5 font-semibold text-ink">
+                            {p.label}
+                            <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 ${on ? 'border-indigo bg-indigo text-white' : 'border-ink-line'}`} aria-hidden="true">
+                              {on && <svg className="h-3 w-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2"><path d="m2.5 6 2.5 2.5 4.5-5" /></svg>}
+                            </span>
+                          </span>
+                        </button>
+                        <div className="px-3 pb-3 pt-2">
+                          {on ? (
+                            <label className="flex items-center gap-2 text-sm text-ink-muted">
+                              Qté
+                              <input type="number" min="1" inputMode="numeric" value={form.quantities[p.id] ?? ''}
+                                onChange={(e) => { setForm((f) => ({ ...f, quantities: { ...f.quantities, [p.id]: e.target.value } })); setErrors((x) => ({ ...x, produits: '' })) }}
+                                className="field py-1.5" aria-label={`Quantité de ${p.label}`} />
+                            </label>
+                          ) : <p className="text-xs leading-snug text-ink-muted">{p.usage}</p>}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+                {err('produits')}
+              </fieldset>
+            )}
+
+            {step === 1 && (
+              <div className="space-y-8">
+                <fieldset>
+                  <legend className="font-display text-xl font-bold text-indigo">Quelle technique ?</legend>
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                    {TECHNIQUES_CHOIX.map((t) => (
+                      <label key={t.id} className={`flex cursor-pointer gap-3 rounded-xl border-2 p-4 transition-colors ${form.technique === t.id ? 'border-indigo bg-indigo-mist' : 'border-ink-line hover:border-indigo/40'}`}>
+                        <input type="radio" name="technique" value={t.id} checked={form.technique === t.id} onChange={() => set('technique', t.id)} className="mt-1 accent-[#241675]" />
+                        <span><span className="block font-semibold text-ink">{t.label}</span><span className="text-sm text-ink-muted">{t.desc}</span></span>
+                      </label>
+                    ))}
+                  </div>
+                  {err('technique')}
+                </fieldset>
+
+                <fieldset>
+                  <legend className="font-display text-xl font-bold text-indigo">Où placer le marquage ?</legend>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {EMPLACEMENTS.map((e) => {
+                      const on = form.emplacements.includes(e.id)
+                      return (
+                        <button key={e.id} type="button" onClick={() => toggleEmplacement(e.id)} aria-pressed={on}
+                          className={`rounded-full border-2 px-4 py-2 text-sm font-medium transition-colors ${on ? 'border-indigo bg-indigo text-white' : 'border-ink-line text-ink hover:border-indigo/40'}`}>
+                          {e.label}
+                        </button>
+                      )
+                    })}
+                  </div>
+                  {err('emplacements')}
+                </fieldset>
+
+                <fieldset>
+                  <legend className="font-display text-xl font-bold text-indigo">Votre logo <span className="font-sans text-sm font-normal text-ink-muted">(facultatif)</span></legend>
+                  <p className="mt-1 text-sm text-ink-muted">Joint maintenant, il nous permet de vous envoyer une maquette avec le devis. PNG, JPG, PDF, AI ou SVG.</p>
+                  <label className="mt-4 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gold/70 bg-paper px-6 py-8 text-center hover:bg-gold-soft/40">
+                    <input type="file" accept="image/*,.pdf,.ai,.eps,.svg" className="sr-only" onChange={(e) => set('logo', e.target.files?.[0] || null)} />
+                    {form.logo ? (
+                      <>
+                        {logoPreview && <img src={logoPreview} alt="Aperçu du logo" className="h-20 w-auto object-contain" />}
+                        <span className="font-semibold text-indigo">{form.logo.name}</span>
+                        <span className="text-xs text-ink-muted">Cliquer pour remplacer</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="font-semibold text-indigo">Choisir un fichier</span>
+                        <span className="text-xs text-ink-muted">ou l’envoyer plus tard par e-mail</span>
+                      </>
+                    )}
+                  </label>
+                </fieldset>
+              </div>
+            )}
+
+            {step === 2 && (
+              <div className="space-y-6">
+                <h2 className="font-display text-xl font-bold text-indigo">Votre projet</h2>
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <div>
+                    <label htmlFor="secteur" className="label">Secteur d’activité</label>
+                    <select id="secteur" className="field" value={form.secteur} onChange={(e) => set('secteur', e.target.value)}>
+                      <option value="">Choisir…</option>
+                      {SECTEURS.map((s) => <option key={s}>{s}</option>)}
+                    </select>
+                    {err('secteur')}
+                  </div>
+                  <div>
+                    <label htmlFor="delai" className="label">Pour quand ?</label>
+                    <select id="delai" className="field" value={form.delai} onChange={(e) => set('delai', e.target.value)}>
+                      <option value="">Choisir…</option>
+                      {DELAIS.map((d) => <option key={d}>{d}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label htmlFor="tailles" className="label">Répartition des tailles <span className="font-normal text-ink-muted">(si vous la connaissez)</span></label>
+                  <input id="tailles" className="field" placeholder="Ex. 4 S, 8 M, 6 L, 2 XL" value={form.tailles} onChange={(e) => set('tailles', e.target.value)} />
+                </div>
+                <div>
+                  <label htmlFor="description" className="label">Précisions</label>
+                  <textarea id="description" rows={5} className="field" placeholder="Couleurs des pièces, texte à ajouter, prénoms, date impérative, budget…" value={form.description} onChange={(e) => set('description', e.target.value)} />
+                </div>
+              </div>
+            )}
+
+            {step === 3 && (
+              <div className="space-y-6">
+                <h2 className="font-display text-xl font-bold text-indigo">Vos coordonnées</h2>
+                <div className="grid gap-5 sm:grid-cols-2">
+                  {[
+                    ['prenom', 'Prénom', 'given-name'],
+                    ['nom', 'Nom', 'family-name'],
+                    ['entreprise', 'Entreprise ou structure', 'organization'],
+                    ['siret', 'SIRET (facultatif)', 'off'],
+                    ['email', 'E-mail professionnel', 'email'],
+                    ['telephone', 'Téléphone', 'tel'],
+                  ].map(([k, l, ac]) => (
+                    <div key={k}>
+                      <label htmlFor={k} className="label">{l}</label>
+                      <input id={k} className="field" autoComplete={ac} type={k === 'email' ? 'email' : k === 'telephone' ? 'tel' : 'text'}
+                        value={form[k]} onChange={(e) => set(k, e.target.value)} />
+                      {err(k)}
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-ink-muted">Vos informations servent uniquement à établir votre devis et à vous recontacter.</p>
+                {sendError && (
+                  <p className="rounded-lg bg-[#FEF3F2] px-4 py-3 text-sm text-[#B42318]" role="alert">
+                    L’envoi n’a pas abouti. Réessayez, ou contactez-nous au {CONTACT.tel} ou à {CONTACT.email}.
+                  </p>
+                )}
+              </div>
+            )}
+
+            <div className="mt-10 flex items-center justify-between gap-4 border-t border-ink-line pt-6">
+              {step > 0 ? <button type="button" onClick={back} className="font-semibold text-ink-muted hover:text-indigo">Retour</button> : <span />}
+              <button type="submit" className="btn-primary" disabled={sending}>
+                {sending ? sendMsg || 'Envoi…' : step < 3 ? <>Continuer <Arrow /></> : 'Envoyer ma demande'}
+              </button>
+            </div>
+          </form>
+
+          {/* Récapitulatif */}
+          <aside className="h-fit rounded-2xl bg-indigo p-6 text-white lg:sticky lg:top-24">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-gold">Votre demande</p>
+            <dl className="mt-4 space-y-4 text-sm">
+              <div>
+                <dt className="text-indigo-soft">Pièces</dt>
+                <dd className="mt-1 font-medium">
+                  {form.produits.length ? form.produits.map((id) => (
+                    <span key={id} className="flex justify-between gap-3"><span>{PIECES.find((p) => p.id === id)?.label}</span><span className="tabular-nums">{form.quantities[id] || '—'}</span></span>
+                  )) : '—'}
+                </dd>
+              </div>
+              <div className="flex justify-between border-t border-dashed border-gold/50 pt-3">
+                <dt className="text-indigo-soft">Total</dt>
+                <dd className={`font-display text-lg font-bold ${total && total < MINIMUM_PIECES ? 'text-gold' : ''}`}>{total} pièce{total > 1 ? 's' : ''}</dd>
+              </div>
+              {form.technique && <div><dt className="text-indigo-soft">Technique</dt><dd className="mt-1 font-medium">{TECHNIQUES_CHOIX.find((t) => t.id === form.technique)?.label}</dd></div>}
+              {form.emplacements.length > 0 && <div><dt className="text-indigo-soft">Emplacements</dt><dd className="mt-1 font-medium">{form.emplacements.map((id) => EMPLACEMENTS.find((e) => e.id === id)?.label).join(', ')}</dd></div>}
+              {pack && (
+                <div className="rounded-lg bg-white/10 p-3">
+                  <dt className="text-indigo-soft">Prix indicatif, pack {pack.nom}</dt>
+                  <dd className="mt-1 font-display text-lg font-bold">
+                    {euro((pack.paliers.filter(([q]) => total >= q).pop() || pack.paliers[0])[1])} HT / {pack.unite || 'pièce'}
+                  </dd>
+                </div>
+              )}
+            </dl>
+            <p className="mt-6 border-t border-white/10 pt-4 text-xs leading-relaxed text-indigo-soft">
+              Devis détaillé et maquette envoyés par e-mail. Aucun engagement avant votre validation.
+            </p>
+          </aside>
+        </div>
+      </div>
+    </section>
   )
 }

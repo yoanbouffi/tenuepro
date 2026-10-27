@@ -3,35 +3,46 @@
 @tailwind utilities;
 
 @layer base {
-  html {
-    scroll-behavior: smooth;
-  }
+  html { scroll-behavior: smooth; }
   body {
     font-family: 'Inter', system-ui, sans-serif;
-    @apply text-gray-900 bg-white;
+    @apply text-ink bg-white antialiased;
   }
+  h1, h2, h3 { font-family: 'Archivo', 'Inter', system-ui, sans-serif; }
+  :focus-visible { outline: 2px solid #E8A33D; outline-offset: 2px; }
 }
 
 @layer components {
+  .wrap { @apply max-w-site mx-auto px-4 sm:px-6 lg:px-8; }
+  .eyebrow { @apply text-xs font-semibold uppercase tracking-[0.14em] text-gold-deep; }
+  .h-section { @apply font-display font-extrabold text-indigo text-3xl md:text-[2.6rem] leading-[1.05] tracking-tight; }
+  .lead { @apply text-base md:text-lg text-ink-muted leading-relaxed; }
+
+  /* Le « fil » : pointillé doré, motif de la marque */
+  .stitch { border-left: 2px dashed #E8A33D; }
+  .stitch-top { border-top: 2px dashed #E8A33D; }
+  .stitch-frame { @apply absolute inset-2 rounded-md pointer-events-none; border: 1.5px dashed rgba(232,163,61,.75); }
+
   .btn-primary {
-    @apply bg-[#7C3AED] text-white font-semibold px-6 py-3 rounded-lg hover:bg-violet-800 transition-all duration-200 inline-flex items-center gap-2 shadow-md hover:shadow-lg active:scale-95;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-indigo px-6 py-3 font-semibold text-white transition-colors hover:bg-indigo-deep active:translate-y-px disabled:opacity-60;
+  }
+  .btn-gold {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-gold px-6 py-3 font-semibold text-indigo-deep transition-colors hover:bg-[#F0B455] active:translate-y-px;
   }
   .btn-secondary {
-    @apply border-2 border-white text-white font-semibold px-6 py-3 rounded-lg hover:bg-white hover:text-gray-900 transition-all duration-200 inline-flex items-center gap-2;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border-2 border-white px-6 py-3 font-semibold text-white transition-colors hover:bg-white hover:text-indigo;
   }
   .btn-outline {
-    @apply border-2 border-[#7C3AED] text-[#7C3AED] font-semibold px-6 py-3 rounded-lg hover:bg-[#7C3AED] hover:text-white transition-all duration-200 inline-flex items-center gap-2;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border-2 border-indigo px-6 py-3 font-semibold text-indigo transition-colors hover:bg-indigo hover:text-white;
   }
-  .section-title {
-    @apply text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight;
-  }
-  .section-subtitle {
-    @apply text-lg text-gray-500 mt-3 max-w-2xl mx-auto;
-  }
-  .th {
-    @apply text-left px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wide;
-  }
-  .td {
-    @apply px-4 py-3 text-sm;
-  }
+  .btn-link { @apply inline-flex items-center gap-1.5 font-semibold text-indigo underline decoration-gold decoration-2 underline-offset-4 hover:text-indigo-deep; }
+
+  .field { @apply block w-full rounded-lg border border-ink-line bg-white px-3.5 py-2.5 text-ink placeholder:text-ink-muted/60 transition-colors focus:border-indigo focus:outline-none focus:ring-2 focus:ring-indigo/15; }
+  .label { @apply mb-1.5 block text-sm font-medium text-ink; }
+
+  /* Compatibilité pages existantes (connexion, espace client, admin) */
+  .section-title { @apply font-display text-3xl md:text-4xl font-extrabold text-indigo leading-tight; }
+  .section-subtitle { @apply text-lg text-ink-muted mt-3 max-w-2xl mx-auto; }
+  .th { @apply text-left px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wide; }
+  .td { @apply px-4 py-3 text-sm; }
 }
