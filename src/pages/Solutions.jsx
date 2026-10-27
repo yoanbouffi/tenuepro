@@ -32,7 +32,7 @@ export default function Solutions() {
           return (
             <section key={m.id} id={m.id} className="scroll-mt-20 border-b border-ink-line last:border-0">
               <div className={`wrap grid items-center gap-10 py-16 md:grid-cols-2 md:gap-16 ${i % 2 ? 'md:[&>*:first-child]:order-2' : ''}`}>
-                <div className="relative overflow-hidden rounded-2xl bg-indigo-mist">
+                <div className="relative overflow-hidden rounded-2xl bg-[#d6d5d3]">
                   <img src={m.img} alt={`Tenues personnalisées — ${m.nom}`} loading="lazy" className="aspect-[16/11] w-full object-cover" />
                   <Bandeau m={m} grand />
                   <Etiquette>{m.label}</Etiquette>

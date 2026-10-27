@@ -20,15 +20,12 @@ export function Arrow({ className = 'h-4 w-4' }) {
   )
 }
 
-/** Bandeau-titre posé sur le haut de la photo (couvre les visages, laisse voir le marquage) */
+/** Titre posé en haut à gauche de la photo catalogue (ne masque pas les vêtements) */
 export function Bandeau({ m, grand = false }) {
   return (
-    <div className="absolute inset-x-0 top-0 flex items-center bg-indigo px-5" style={{ height: `${m.bande || 36}%` }}>
-      <span className="pointer-events-none absolute inset-x-2 bottom-2 top-2 rounded-md border border-dashed border-gold/70" aria-hidden="true" />
-      <div className="relative min-w-0">
-        <p className={`font-display font-extrabold leading-[1.05] text-white ${grand ? 'text-2xl sm:text-4xl' : 'text-xl sm:text-2xl'}`}>{m.nom}</p>
-        {grand && m.pieces?.length > 0 && <p className="mt-1.5 truncate text-sm font-medium text-gold">{m.pieces.join(' · ')}</p>}
-      </div>
+    <div className="absolute left-4 top-4 max-w-[80%] rounded-lg bg-indigo px-4 py-2.5 shadow-md">
+      <p className={`font-display font-extrabold leading-[1.05] text-white ${grand ? 'text-xl sm:text-2xl' : 'text-lg'}`}>{m.nom}</p>
+      {grand && m.pieces?.length > 0 && <p className="mt-1 truncate text-xs font-medium text-gold sm:text-sm">{m.pieces.join(' · ')}</p>}
     </div>
   )
 }
@@ -45,7 +42,7 @@ export function Etiquette({ children, className = '' }) {
 export function SceneCard({ m, to }) {
   return (
     <Link to={to} className="group block">
-      <div className="relative aspect-[16/10] overflow-hidden rounded-xl bg-indigo-mist">
+      <div className="relative aspect-[16/10] overflow-hidden rounded-xl bg-[#d6d5d3]">
         <img src={m.img} alt={`Tenues personnalisées — ${m.nom}`} loading="lazy"
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]" style={{ transformOrigin: 'bottom' }} />
         <Bandeau m={m} />

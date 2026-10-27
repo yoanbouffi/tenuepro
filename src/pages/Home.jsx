@@ -46,12 +46,12 @@ export default function Home() {
           </div>
 
           <div className="relative mx-auto w-full max-w-[520px]">
-            <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-indigo sm:aspect-[5/4]">
-              <img src="/images/atelier.webp" alt="Brodeuse multi-aiguilles en train de broder un logo sur un polo bleu marine" className="h-full w-full object-cover object-[60%_50%]" fetchpriority="high" />
+            <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-[#d6d5d3] sm:aspect-[5/4]">
+              <img src="/images/atelier.webp" alt="Polo, t-shirt, tablier et casquette marqués d’un logo, pliés sur fond clair" className="h-full w-full object-cover object-[45%_50%]" fetchpriority="high" />
               <span className="stitch-frame !inset-3" aria-hidden="true" />
             </div>
             <div className="absolute -bottom-8 -left-4 w-[52%] overflow-hidden rounded-xl border-4 border-paper shadow-xl sm:-left-10">
-              <img src="/images/scene-btp.webp" alt="Équipe en t-shirts marqués au dos sur un chantier" className="aspect-[4/3] w-full object-cover object-[50%_70%]" />
+              <img src="/images/broderie-macro.webp" alt="Gros plan d’un logo brodé fil blanc et or sur un polo marine" className="aspect-[4/3] w-full object-cover" />
             </div>
             <div className="absolute -right-2 top-6 rounded-lg bg-white px-4 py-3 shadow-lg sm:-right-6">
               <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-gold-deep">Broderie</p>
