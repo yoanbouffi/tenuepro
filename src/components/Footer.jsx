@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom'
-import { CONTACT } from '../data/offre'
+import { useOffre } from '../content/OffreContext'
 
 export default function Footer() {
+  const { CONTACT } = useOffre()
   return (
     <footer className="bg-indigo-deep text-indigo-soft">
       <div className="wrap grid gap-10 py-14 md:grid-cols-[1.4fr_1fr_1fr]">

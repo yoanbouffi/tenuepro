@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { euro, lc } from '../data/offre'
+import { useOffre } from '../content/OffreContext'
 
 export function SectionHead({ eyebrow, title, children, align = 'left', className = '' }) {
   return (
@@ -83,6 +84,7 @@ export function Faq({ items }) {
 }
 
 export function CtaBand() {
+  const { CONTACT } = useOffre()
   return (
     <section className="bg-paper">
       <div className="wrap py-16 md:py-20">
@@ -92,7 +94,7 @@ export function CtaBand() {
           <p className="mx-auto mt-4 max-w-xl text-indigo-soft">Décrivez-le en deux minutes. Vous recevez un devis détaillé et une maquette de votre logo.</p>
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
             <Link to="/devis" className="btn-gold">Demander un devis <Arrow /></Link>
-            <a href="tel:+262692105217" className="btn-secondary">Appeler le 0692 10 52 17</a>
+            <a href={CONTACT.telHref} className="btn-secondary">Appeler le {CONTACT.tel}</a>
           </div>
         </div>
       </div>

@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom'
-import { METIERS, PACKS, euro, lc } from '../data/offre'
+import { euro, lc } from '../data/offre'
+import { useOffre } from '../content/OffreContext'
 import { CtaBand, Arrow } from '../components/ui'
 
 export default function Solutions() {
+  const { METIERS, PACKS } = useOffre()
   return (
     <>
       <section className="bg-paper pt-16">
@@ -25,6 +27,7 @@ export default function Solutions() {
       <div className="bg-white">
         {METIERS.map((m, i) => {
           const pack = PACKS.find((p) => p.id === m.pack)
+          if (!pack) return null
           const [, prix] = pack.paliers[pack.paliers.length - 1]
           return (
             <section key={m.id} id={m.id} className="scroll-mt-20 border-b border-ink-line last:border-0">

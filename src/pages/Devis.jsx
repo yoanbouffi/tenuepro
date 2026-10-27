@@ -3,29 +3,49 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { submitDevisForm, uploadLogoToCloudinary } from '../lib/webhook'
 import { buildAllMockupUrls } from '../lib/mockups'
-import { PIECES, EMPLACEMENTS, PACKS, SECTEURS, DELAIS, MINIMUM_PIECES, CONTACT, euro } from '../data/offre'
+import { PIECES, EMPLACEMENTS, SECTEURS, DELAIS, euro, emplacementsPour } from '../data/offre'
+import { useOffre } from '../content/OffreContext'
 import { Arrow } from '../components/ui'
 
-const TECHNIQUES_CHOIX = [
-  { id: 'broderie', label: 'Broderie', desc: 'Logo cousu, rendu haut de gamme' },
-  { id: 'flocage', label: 'Flocage', desc: 'Textes, noms, numéros, une couleur' },
-  { id: 'dtf', label: 'Impression DTF', desc: 'Visuels en couleurs, grands formats' },
-  { id: 'les_deux', label: 'Plusieurs techniques', desc: 'Par exemple brodé devant, imprimé au dos' },
-  { id: 'ne_sait_pas', label: 'Conseillez-moi', desc: 'Nous choisissons avec vous' },
+const TECHS = [
+  { id: 'broderie', label: 'Broderie' },
+  { id: 'flocage', label: 'Flocage' },
+  { id: 'dtf', label: 'DTF' },
+  { id: 'conseil', label: 'À conseiller' },
 ]
-const TECH_FROM_PACK = { broderie: 'broderie', flocage: 'flocage', dtf: 'dtf', mix: 'les_deux' }
+const techLabel = (id) => TECHS.find((t) => t.id === id)?.label || id
+const techTexte = (id) => (id === 'conseil' ? 'technique à conseiller' : id === 'dtf' ? 'impression DTF' : techLabel(id).toLowerCase())
+const emplLabel = (id) => EMPLACEMENTS.find((e) => e.id === id)?.label || id
+const pieceLabel = (id) => PIECES.find((p) => p.id === id)?.label || id
+
+/** Marquages d'un pack ; accepte aussi l'ancien format (technique + emplacements communs). */
+function marquagesDuPack(devis) {
+  if (devis.marquages) return JSON.parse(JSON.stringify(devis.marquages))
+  const tech = { broderie: 'broderie', flocage: 'flocage', dtf: 'dtf' }[devis.technique] || 'conseil'
+  return Object.fromEntries(Object.keys(devis.quantities || {}).map((id) => [id, Object.fromEntries((devis.emplacements || []).map((e) => [e, tech]))]))
+}
+
+/** Résumé pour n8n : une technique, plusieurs, ou à conseiller. */
+function techniqueGlobale(marquages) {
+  const t = [...new Set(Object.values(marquages).flatMap((m) => Object.values(m)).filter((x) => x !== 'conseil'))]
+  return t.length === 0 ? 'ne_sait_pas' : t.length === 1 ? t[0] : 'les_deux'
+}
 
 const STEPS = ['Pièces', 'Marquage', 'Projet', 'Coordonnées']
 
 const initial = {
-  produits: [], quantities: {}, technique: '', emplacements: [], logo: null,
+  produits: [], quantities: {}, marquages: {}, logo: null,
   secteur: '', delai: '', tailles: '', description: '',
   prenom: '', nom: '', entreprise: '', siret: '', email: '', telephone: '',
 }
 
 export default function Devis() {
+  const { PACKS, MINIMUM_PIECES, CONTACT } = useOffre()
   const [params] = useSearchParams()
-  const pack = PACKS.find((p) => p.id === params.get('pack')) || null
+  // Le pack (paramètre d'URL) n'est lu qu'une fois la page chargée : la page pré-générée n'en a pas
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+  const pack = (mounted && PACKS.find((p) => p.id === params.get('pack'))) || null
   const { user } = useAuth()
 
   const [form, setForm] = useState(initial)
@@ -44,10 +64,9 @@ export default function Devis() {
     setForm((f) => ({
       ...f,
       ...(pack ? {
-        produits: [...pack.devis.produits],
+        produits: Object.keys(pack.devis.quantities || {}),
         quantities: { ...pack.devis.quantities },
-        technique: TECH_FROM_PACK[pack.devis.technique] || '',
-        emplacements: [...pack.devis.emplacements],
+        marquages: marquagesDuPack(pack.devis),
       } : {}),
       secteur: params.get('secteur') || f.secteur,
       email: f.email || user?.email || '',
@@ -67,14 +86,24 @@ export default function Devis() {
     setForm((f) => {
       const on = f.produits.includes(id)
       const quantities = { ...f.quantities }
-      if (on) delete quantities[id]
+      const marquages = { ...f.marquages }
+      if (on) { delete quantities[id]; delete marquages[id] }
       else quantities[id] = quantities[id] || ''
-      return { ...f, produits: on ? f.produits.filter((p) => p !== id) : [...f.produits, id], quantities }
+      return { ...f, produits: on ? f.produits.filter((p) => p !== id) : [...f.produits, id], quantities, marquages }
     })
     setErrors((e) => ({ ...e, produits: '' }))
   }
-  const toggleEmplacement = (id) =>
-    set('emplacements', form.emplacements.includes(id) ? form.emplacements.filter((x) => x !== id) : [...form.emplacements, id])
+  const toggleEmplacement = (piece, empl) => {
+    setForm((f) => {
+      const m = { ...(f.marquages[piece] || {}) }
+      if (m[empl]) delete m[empl]
+      else m[empl] = 'conseil'
+      return { ...f, marquages: { ...f.marquages, [piece]: m } }
+    })
+    setErrors((e) => ({ ...e, marquages: '' }))
+  }
+  const setTech = (piece, empl, tech) =>
+    setForm((f) => ({ ...f, marquages: { ...f.marquages, [piece]: { ...f.marquages[piece], [empl]: tech } } }))
 
   const validate = (s) => {
     const e = {}
@@ -84,8 +113,8 @@ export default function Devis() {
       else if (total < MINIMUM_PIECES) e.produits = `Le minimum est de ${MINIMUM_PIECES} pièces au total (actuellement ${total}).`
     }
     if (s === 1) {
-      if (!form.technique) e.technique = 'Choisissez une technique, ou « Conseillez-moi ».'
-      if (!form.emplacements.length) e.emplacements = 'Choisissez au moins un emplacement.'
+      const sans = form.produits.filter((id) => !Object.keys(form.marquages[id] || {}).length)
+      if (sans.length) e.marquages = `Choisissez au moins un emplacement pour : ${sans.map(pieceLabel).join(', ')}.`
     }
     if (s === 2) {
       if (!form.secteur) e.secteur = 'Choisissez votre secteur.'
@@ -123,11 +152,10 @@ export default function Devis() {
       } catch (err) { console.error('Upload logo', err) /* non bloquant */ }
     }
 
-    const label = (list, id) => list.find((x) => x.id === id)?.label || id
     const description = [
       pack ? `Pack : ${pack.nom}` : null,
-      `Technique : ${label(TECHNIQUES_CHOIX, form.technique)}`,
-      `Emplacements : ${form.emplacements.map((id) => label(EMPLACEMENTS, id)).join(', ')}`,
+      'Marquage :',
+      ...form.produits.map((id) => `- ${pieceLabel(id)} (${form.quantities[id]}) : ${Object.entries(form.marquages[id] || {}).map(([e, t]) => `${emplLabel(e)} : ${techTexte(t)}`).join(', ')}`),
       form.tailles.trim() ? `Tailles : ${form.tailles.trim()}` : null,
       form.description.trim() ? `\n${form.description.trim()}` : null,
     ].filter(Boolean).join('\n')
@@ -144,8 +172,9 @@ export default function Devis() {
       quantity: JSON.stringify(Object.fromEntries(form.produits.map((id) => [id, parseInt(form.quantities[id], 10)]))),
       description,
       deadline: form.delai,
-      marquage: form.technique,
-      emplacements: form.emplacements,
+      marquage: techniqueGlobale(form.marquages),
+      emplacements: [...new Set(Object.values(form.marquages).flatMap((m) => Object.keys(m)))],
+      marquages: form.marquages,
       pack: pack?.id || null,
       logo_url: logoUrl,
       logo_public_id: logoPublicId,
@@ -243,32 +272,59 @@ export default function Devis() {
             {step === 1 && (
               <div className="space-y-8">
                 <fieldset>
-                  <legend className="font-display text-xl font-bold text-indigo">Quelle technique ?</legend>
-                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                    {TECHNIQUES_CHOIX.map((t) => (
-                      <label key={t.id} className={`flex cursor-pointer gap-3 rounded-xl border-2 p-4 transition-colors ${form.technique === t.id ? 'border-indigo bg-indigo-mist' : 'border-ink-line hover:border-indigo/40'}`}>
-                        <input type="radio" name="technique" value={t.id} checked={form.technique === t.id} onChange={() => set('technique', t.id)} className="mt-1 accent-[#241675]" />
-                        <span><span className="block font-semibold text-ink">{t.label}</span><span className="text-sm text-ink-muted">{t.desc}</span></span>
-                      </label>
-                    ))}
-                  </div>
-                  {err('technique')}
-                </fieldset>
-
-                <fieldset>
-                  <legend className="font-display text-xl font-bold text-indigo">Où placer le marquage ?</legend>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {EMPLACEMENTS.map((e) => {
-                      const on = form.emplacements.includes(e.id)
+                  <legend className="font-display text-xl font-bold text-indigo">Où marquer chaque pièce, et comment&nbsp;?</legend>
+                  <p className="mt-1 text-sm text-ink-muted">Choisissez les emplacements de chaque pièce, puis la technique. Vous hésitez&nbsp;? Laissez «&nbsp;À conseiller&nbsp;».</p>
+                  <div className="mt-5 space-y-4">
+                    {form.produits.map((id) => {
+                      const piece = PIECES.find((p) => p.id === id)
+                      const m = form.marquages[id] || {}
                       return (
-                        <button key={e.id} type="button" onClick={() => toggleEmplacement(e.id)} aria-pressed={on}
-                          className={`rounded-full border-2 px-4 py-2 text-sm font-medium transition-colors ${on ? 'border-indigo bg-indigo text-white' : 'border-ink-line text-ink hover:border-indigo/40'}`}>
-                          {e.label}
-                        </button>
+                        <div key={id} className="rounded-xl border border-ink-line p-4">
+                          <div className="flex items-center gap-3">
+                            <img src={piece?.img} alt="" className="h-12 w-12 rounded-lg object-cover" />
+                            <p className="font-display text-lg font-bold text-indigo">{pieceLabel(id)} <span className="font-sans text-sm font-medium text-ink-muted">× {form.quantities[id]}</span></p>
+                          </div>
+                          <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label={`Emplacements — ${pieceLabel(id)}`}>
+                            {emplacementsPour(id).map((e) => {
+                              const on = !!m[e]
+                              return (
+                                <button key={e} type="button" onClick={() => toggleEmplacement(id, e)} aria-pressed={on}
+                                  className={`rounded-full border-2 px-3.5 py-1.5 text-sm font-medium ${on ? 'border-indigo bg-indigo text-white' : 'border-ink-line text-ink hover:border-indigo/40'}`}>
+                                  {on ? '✓ ' : '+ '}{emplLabel(e)}
+                                </button>
+                              )
+                            })}
+                          </div>
+                          {Object.keys(m).length > 0 && (
+                            <ul className="mt-4 space-y-2.5 border-t border-dashed border-gold/70 pt-4">
+                              {Object.entries(m).map(([e, t]) => (
+                                <li key={e} className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                  <span className="text-sm font-semibold text-ink">{emplLabel(e)}</span>
+                                  <div className="grid grid-cols-4 gap-1 rounded-lg bg-indigo-mist p-1" role="radiogroup" aria-label={`Technique — ${pieceLabel(id)}, ${emplLabel(e)}`}>
+                                    {TECHS.map((tk) => (
+                                      <button key={tk.id} type="button" role="radio" aria-checked={t === tk.id} onClick={() => setTech(id, e, tk.id)}
+                                        className={`rounded-md px-2.5 py-1.5 text-xs font-semibold sm:text-sm ${t === tk.id ? 'bg-white text-indigo shadow-sm' : 'text-ink-muted hover:text-indigo'}`}>
+                                        {tk.label}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
                       )
                     })}
                   </div>
-                  {err('emplacements')}
+                  {err('marquages')}
+                  <details className="mt-4 text-sm text-ink-muted">
+                    <summary className="cursor-pointer font-semibold text-indigo">Quelle technique choisir&nbsp;?</summary>
+                    <ul className="mt-2 space-y-1 pl-1">
+                      <li><strong className="text-ink">Broderie</strong> : logo côté cœur, casquettes, prénoms. Le plus haut de gamme.</li>
+                      <li><strong className="text-ink">Flocage</strong> : textes, noms et numéros d’une seule couleur.</li>
+                      <li><strong className="text-ink">DTF</strong> : visuels en couleurs et grands formats au dos.</li>
+                    </ul>
+                  </details>
                 </fieldset>
 
                 <fieldset>
@@ -377,8 +433,16 @@ export default function Devis() {
                 <dt className="text-indigo-soft">Total</dt>
                 <dd className={`font-display text-lg font-bold ${total && total < MINIMUM_PIECES ? 'text-gold' : ''}`}>{total} pièce{total > 1 ? 's' : ''}</dd>
               </div>
-              {form.technique && <div><dt className="text-indigo-soft">Technique</dt><dd className="mt-1 font-medium">{TECHNIQUES_CHOIX.find((t) => t.id === form.technique)?.label}</dd></div>}
-              {form.emplacements.length > 0 && <div><dt className="text-indigo-soft">Emplacements</dt><dd className="mt-1 font-medium">{form.emplacements.map((id) => EMPLACEMENTS.find((e) => e.id === id)?.label).join(', ')}</dd></div>}
+              {Object.values(form.marquages).some((m) => Object.keys(m).length) && (
+                <div>
+                  <dt className="text-indigo-soft">Marquage</dt>
+                  <dd className="mt-1 space-y-1.5 font-medium">
+                    {form.produits.filter((id) => Object.keys(form.marquages[id] || {}).length).map((id) => (
+                      <p key={id}><span className="text-gold">{pieceLabel(id)}</span> — {Object.entries(form.marquages[id]).map(([e, t]) => `${emplLabel(e)} (${techTexte(t)})`).join(', ')}</p>
+                    ))}
+                  </dd>
+                </div>
+              )}
               {pack && (
                 <div className="rounded-lg bg-white/10 p-3">
                   <dt className="text-indigo-soft">Prix indicatif, pack {pack.nom}</dt>

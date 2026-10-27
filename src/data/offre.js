@@ -53,18 +53,31 @@ export const TECHNIQUES = [
 ]
 
 export const EMPLACEMENTS = [
-  { id: 'coeur',  label: 'Côté cœur' },
-  { id: 'dos',    label: 'Dos' },
-  { id: 'manche', label: 'Manche' },
-  { id: 'nuque',  label: 'Nuque' },
-  { id: 'prenom', label: 'Prénom ou nom' },
-  { id: 'face',   label: 'Face casquette' },
+  { id: 'coeur',   label: 'Côté cœur' },
+  { id: 'dos',     label: 'Dos' },
+  { id: 'manche',  label: 'Manche' },
+  { id: 'nuque',   label: 'Nuque' },
+  { id: 'prenom',  label: 'Prénom ou nom' },
+  { id: 'face',    label: 'Face avant' },
+  { id: 'cote',    label: 'Côté' },
+  { id: 'arriere', label: 'Arrière' },
+  { id: 'poitrine', label: 'Poitrine' },
+  { id: 'bas',     label: 'Bas du tablier' },
 ]
+
+// Emplacements proposés selon la pièce
+export const EMPLACEMENTS_PAR_PIECE = {
+  casquettes: ['face', 'cote', 'arriere'],
+  tabliers: ['poitrine', 'bas', 'prenom'],
+  sacs: ['face', 'dos'],
+  default: ['coeur', 'dos', 'manche', 'nuque', 'prenom'],
+}
+export const emplacementsPour = (pieceId) => EMPLACEMENTS_PAR_PIECE[pieceId] || EMPLACEMENTS_PAR_PIECE.default
 
 // Hypothèses de prix d'achat textile (HT, rendu atelier) utilisées pour les packs
 export const textileHT = { polo: 9, tshirt: 4.5, tablier: 8, casquette: 4 }
 
-// Prix par pièce, HT. `paliers` : quantité minimum → prix unitaire.
+// Prix par pièce, HT : un prix par palier de quantité (voir PALIERS).
 export const PACKS = [
   {
     id: 'accueil',
@@ -73,8 +86,8 @@ export const PACKS = [
     img: '/images/polo.webp',
     contenu: 'Polo',
     marquage: 'Logo brodé côté cœur',
-    paliers: [[20, 24], [50, 23.5]],
-    devis: { produits: ['polos'], quantities: { polos: 20 }, technique: 'broderie', emplacements: ['coeur'] },
+    prix: [24, 23.5],
+    devis: { quantities: { polos: 20 }, marquages: { polos: { coeur: 'broderie' } } },
   },
   {
     id: 'terrain',
@@ -83,8 +96,8 @@ export const PACKS = [
     img: '/images/scene-btp.webp',
     contenu: 'T-shirt',
     marquage: 'Logo brodé côté cœur + logo imprimé au dos (A4)',
-    paliers: [[20, 25], [50, 24]],
-    devis: { produits: ['tshirts'], quantities: { tshirts: 20 }, technique: 'mix', emplacements: ['coeur', 'dos'] },
+    prix: [25, 24],
+    devis: { quantities: { tshirts: 20 }, marquages: { tshirts: { coeur: 'broderie', dos: 'dtf' } } },
   },
   {
     id: 'restauration',
@@ -94,8 +107,8 @@ export const PACKS = [
     contenu: 'Polo + tablier',
     marquage: 'Logo brodé sur les deux pièces',
     unite: 'la tenue',
-    paliers: [[20, 46], [50, 45.5]],
-    devis: { produits: ['polos', 'tabliers'], quantities: { polos: 20, tabliers: 20 }, technique: 'broderie', emplacements: ['coeur'] },
+    prix: [46, 45.5],
+    devis: { quantities: { polos: 20, tabliers: 20 }, marquages: { polos: { coeur: 'broderie' }, tabliers: { poitrine: 'broderie' } } },
   },
   {
     id: 'evenement',
@@ -104,8 +117,8 @@ export const PACKS = [
     img: '/images/scene-association.webp',
     contenu: 'T-shirt',
     marquage: 'Visuel couleur côté cœur + grand visuel au dos (A3)',
-    paliers: [[20, 20.5], [50, 20]],
-    devis: { produits: ['tshirts'], quantities: { tshirts: 20 }, technique: 'dtf', emplacements: ['coeur', 'dos'] },
+    prix: [20.5, 20],
+    devis: { quantities: { tshirts: 20 }, marquages: { tshirts: { coeur: 'dtf', dos: 'dtf' } } },
   },
   {
     id: 'club',
@@ -114,8 +127,8 @@ export const PACKS = [
     img: '/images/scene-club.webp',
     contenu: 'Maillot ou t-shirt technique',
     marquage: 'Écusson couleur + nom et numéro floqués au dos',
-    paliers: [[20, 23], [50, 22]],
-    devis: { produits: ['tshirts'], quantities: { tshirts: 20 }, technique: 'mix', emplacements: ['coeur', 'dos', 'prenom'] },
+    prix: [23, 22],
+    devis: { quantities: { tshirts: 20 }, marquages: { tshirts: { coeur: 'dtf', dos: 'flocage', prenom: 'flocage' } } },
   },
   {
     id: 'casquettes',
@@ -124,15 +137,14 @@ export const PACKS = [
     img: '/images/casquette.webp',
     contenu: 'Casquette',
     marquage: 'Logo brodé en face avant',
-    paliers: [[20, 16.5], [50, 16]],
-    devis: { produits: ['casquettes'], quantities: { casquettes: 20 }, technique: 'broderie', emplacements: ['face'] },
+    prix: [16.5, 16],
+    devis: { quantities: { casquettes: 20 }, marquages: { casquettes: { face: 'broderie' } } },
   },
 ]
 
 export const OPTIONS_PACKS = [
   { label: 'Prénom brodé', prix: '+ 7 € HT / pièce' },
   { label: 'Numérisation du logo pour la broderie', prix: 'forfait unique dès 25 € HT, offerte dès 50 pièces' },
-  { label: '100 pièces et plus', prix: 'prix sur devis' },
 ]
 
 export const METIERS = [
@@ -224,3 +236,15 @@ export const euro = (n) =>
   n.toLocaleString('fr-FR', { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 }) + ' €'
 
 export const lc = (t) => t.charAt(0).toLowerCase() + t.slice(1)
+
+// Contenu modifiable depuis l'admin (onglet « Contenu »). Ces valeurs servent
+// de base ; ce qui est enregistré dans Supabase (table site_content) les remplace.
+export const DEFAULT_OFFRE = {
+  MINIMUM_PIECES,
+  PALIERS: [20, 50],   // quantités à partir desquelles chaque prix s'applique
+  SEUIL_DEVIS: 100,    // au-delà : prix sur devis
+  CONTACT,
+  PACKS,
+  OPTIONS_PACKS,
+  METIERS,
+}

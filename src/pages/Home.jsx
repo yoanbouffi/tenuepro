@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom'
-import { TECHNIQUES, METIERS, PACKS, ETAPES, MINIMUM_PIECES, CONTACT } from '../data/offre'
+import { TECHNIQUES, ETAPES } from '../data/offre'
+import { useOffre } from '../content/OffreContext'
 import { SectionHead, SceneCard, PackCard, Faq, CtaBand, Arrow } from '../components/ui'
 
-const FAQ = [
+const faq = (MINIMUM_PIECES) => [
   ['Quelle quantité minimum ?', `Nous travaillons à partir de ${MINIMUM_PIECES} pièces par commande, toutes pièces confondues. Les packs démarrent à 20 pièces et les prix baissent avec la quantité.`],
   ['Quels sont les délais ?', 'Ils dépendent de la quantité, de la technique et de la provenance des textiles. Le délai est confirmé sur votre devis. Si vous avez une date impérative, précisez-la dans votre demande.'],
   ['Mon logo doit-il être dans un format particulier ?', 'Un fichier vectoriel (AI, PDF, SVG) est idéal, mais un PNG ou un JPG de bonne qualité suffit pour démarrer. Nous préparons le fichier de broderie ou d’impression et vous montrons la maquette avant toute production.'],
@@ -11,6 +12,8 @@ const FAQ = [
 ]
 
 export default function Home() {
+  const { METIERS, PACKS, MINIMUM_PIECES, CONTACT } = useOffre()
+  const FAQ = faq(MINIMUM_PIECES)
   return (
     <>
       {/* ── Ouverture ─────────────────────────────────────────────── */}
@@ -30,7 +33,7 @@ export default function Home() {
             </div>
             <dl className="mt-10 grid max-w-lg grid-cols-3 gap-4 text-sm">
               {[
-                ['Dès 10', 'pièces par commande'],
+                [`Dès ${MINIMUM_PIECES}`, 'pièces par commande'],
                 ['3', 'techniques de marquage'],
                 ['Maquette', 'avant production'],
               ].map(([k, v]) => (

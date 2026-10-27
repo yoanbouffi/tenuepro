@@ -75,6 +75,7 @@ export const submitDevisForm = async (formData) => {
         marquage:      formData.marquage      || null,
         emplacements:  formData.emplacements  || [],
         pack:          formData.pack          || null,
+        marquages:     formData.marquages     || {},
         logo_url:       formData.logo_url       || null,
         logo_public_id: formData.logo_public_id || null,
         mockup_urls:    formData.mockup_urls    || [],

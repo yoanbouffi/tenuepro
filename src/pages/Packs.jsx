@@ -1,15 +1,20 @@
 import { Link } from 'react-router-dom'
-import { PACKS, OPTIONS_PACKS, MINIMUM_PIECES, euro, lc } from '../data/offre'
+import { euro, lc } from '../data/offre'
+import { useOffre } from '../content/OffreContext'
 import { SectionHead, PackCard, Faq, CtaBand, Arrow } from '../components/ui'
 
-const FAQ = [
+const faq = ({ MINIMUM_PIECES, PALIERS, SEUIL_DEVIS }) => [
   ['Les prix comprennent-ils le textile ?', 'Oui. Le prix par pièce comprend la pièce textile et le marquage décrit. La TVA (8,5 % à La Réunion) s’ajoute au prix hors taxes.'],
   ['Puis-je changer de pièce ou de couleur ?', 'Oui. Les packs sont un point de départ : modèle, coloris, tailles et emplacements s’ajustent dans votre demande. Le devis tient compte de vos choix.'],
-  ['Pourquoi « dès 20 pièces » ?', `Les packs sont pensés pour équiper une équipe. Pour un besoin plus réduit, une commande sur mesure est possible dès ${MINIMUM_PIECES} pièces.`],
-  ['Et au-delà de 100 pièces ?', 'Nous établissons un prix sur devis, souvent plus bas, car la production peut être confiée à nos partenaires textile. Le contrôle et la livraison restent assurés par TenuePro.'],
+  [`Pourquoi « dès ${PALIERS[0]} pièces » ?`, `Les packs sont pensés pour équiper une équipe. Pour un besoin plus réduit, une commande sur mesure est possible dès ${MINIMUM_PIECES} pièces.`],
+  [`Et à partir de ${SEUIL_DEVIS} pièces ?`, 'Nous établissons un prix sur devis, souvent plus bas, car la production peut être confiée à nos partenaires textile. Le contrôle et la livraison restent assurés par TenuePro.'],
 ]
 
 export default function Packs() {
+  const offre = useOffre()
+  const { PACKS, OPTIONS_PACKS, MINIMUM_PIECES, PALIERS, SEUIL_DEVIS } = offre
+  const FAQ = faq(offre)
+  const entete = PALIERS.map((q, i) => `${q} à ${(PALIERS[i + 1] || SEUIL_DEVIS) - 1} pièces`)
   return (
     <>
       <section className="bg-paper pt-16">
@@ -43,9 +48,8 @@ export default function Packs() {
                 <tr>
                   <th scope="col" className="px-5 py-3.5 font-semibold">Pack</th>
                   <th scope="col" className="px-5 py-3.5 font-semibold">Contenu</th>
-                  <th scope="col" className="px-5 py-3.5 text-right font-semibold">20 à 49 pièces</th>
-                  <th scope="col" className="px-5 py-3.5 text-right font-semibold">50 à 99 pièces</th>
-                  <th scope="col" className="px-5 py-3.5 text-right font-semibold">100 et plus</th>
+                  {entete.map((t) => <th key={t} scope="col" className="px-5 py-3.5 text-right font-semibold">{t}</th>)}
+                  <th scope="col" className="px-5 py-3.5 text-right font-semibold">{SEUIL_DEVIS} et plus</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-ink-line">
