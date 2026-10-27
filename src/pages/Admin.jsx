@@ -71,9 +71,9 @@ const INVOICE_STATUS_LABELS = {
 const fmt = (d) =>
   d ? new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'
 
-const N8N_STATUS_WEBHOOK = 'https://n8n.srv1087606.hstgr.cloud/webhook/tenuepro-statut-change'
-const N8N_DEVIS_WEBHOOK  = 'https://n8n.srv1087606.hstgr.cloud/webhook/tenuepro-generer-devis'
-const N8N_PDF_FACTURE_WEBHOOK = 'https://n8n.srv1087606.hstgr.cloud/webhook/tenuepro-generer-pdf-facture'
+const N8N_STATUS_WEBHOOK = 'https://n8n.landiz.re/webhook/tenuepro-statut-change'
+const N8N_DEVIS_WEBHOOK  = 'https://n8n.landiz.re/webhook/tenuepro-generer-devis'
+const N8N_PDF_FACTURE_WEBHOOK = 'https://n8n.landiz.re/webhook/tenuepro-generer-pdf-facture'
 
 const VALIDITY_DAYS = 180
 

@@ -56,7 +56,7 @@ export const uploadImageToCloudinary = async (file, folder = 'tenuepro/site') =>
 export const notifyStatusChange = async (data) => {
   try {
     const response = await fetch(
-      'https://n8n.srv1087606.hstgr.cloud/webhook/tenuepro-statut-change',
+      'https://n8n.landiz.re/webhook/tenuepro-statut-change',
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -71,7 +71,9 @@ export const notifyStatusChange = async (data) => {
 };
 
 export const submitDevisForm = async (formData) => {
-  const N8N_WEBHOOK_URL = import.meta.env.VITE_N8N_WEBHOOK_URL;
+  // L'ancienne adresse du serveur n8n (srv1087606.hstgr.cloud) ne répond plus : n8n est sur n8n.landiz.re
+  const ENV_URL = import.meta.env.VITE_N8N_WEBHOOK_URL || ''
+  const N8N_WEBHOOK_URL = ENV_URL && !ENV_URL.includes('srv1087606') ? ENV_URL : 'https://n8n.landiz.re/webhook/tenuepro-devis';
   try {
     const response = await fetch(N8N_WEBHOOK_URL, {
       method: 'POST',
