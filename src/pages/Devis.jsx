@@ -86,6 +86,15 @@ export default function Devis() {
   const logoPreview = useMemo(() => (form.logo?.type?.startsWith('image/') ? URL.createObjectURL(form.logo) : null), [form.logo])
   useEffect(() => () => logoPreview && URL.revokeObjectURL(logoPreview), [logoPreview])
 
+  // Le prix du pack ne s'affiche que tant que la demande correspond encore au pack
+  const memes = (a, b) => JSON.stringify(Object.entries(a || {}).sort()) === JSON.stringify(Object.entries(b || {}).sort())
+  const packIntact = !!pack && (() => {
+    const ref = marquagesDuPack(pack.devis)
+    const ids = Object.keys(pack.devis.quantities || {})
+    return form.produits.length === ids.length && ids.every((id) => form.produits.includes(id) && memes(form.marquages[id], ref[id]))
+  })()
+  const qtePack = packIntact ? Math.min(...form.produits.map((id) => parseInt(form.quantities[id], 10) || 0)) : 0
+
   // Pré-remplissage depuis un pack, un métier, ou le compte client
   useEffect(() => {
     setForm((f) => ({
@@ -196,7 +205,7 @@ export default function Devis() {
     }
 
     const description = [
-      pack ? `Pack : ${pack.nom}` : null,
+      pack ? `Pack : ${pack.nom}${packIntact ? '' : ' (modifié par le client)'}` : null,
       'Marquage :',
       ...form.produits.map((id) => `- ${pieceLabel(id)} (${form.quantities[id]}) : ${Object.entries(form.marquages[id] || {}).map(([e, t]) => `${emplLabel(e)} : ${techTexte(t)}`).join(', ')}`),
       'Tailles :',
@@ -220,7 +229,7 @@ export default function Devis() {
       emplacements: [...new Set(Object.values(form.marquages).flatMap((m) => Object.keys(m)))],
       marquages: form.marquages,
       tailles: Object.fromEntries(form.produits.filter(taillesPour).map((id) => [id, Object.fromEntries(Object.entries(form.tailles[id] || {}).filter(([, n]) => parseInt(n, 10) > 0).map(([k, n]) => [k, parseInt(n, 10)]))])),
-      pack: pack?.id || null,
+      pack: packIntact ? pack.id : null,
       logo_url: logoUrl,
       logo_public_id: logoPublicId,
       mockup_urls: mockupUrls,
@@ -283,7 +292,9 @@ export default function Devis() {
           <form onSubmit={handleSubmit} noValidate className="rounded-2xl border border-ink-line bg-white p-6 md:p-8">
             {pack && step === 0 && (
               <div className="mb-6 rounded-lg bg-indigo-mist px-4 py-3 text-sm text-indigo">
-                Pack <strong>{pack.nom}</strong> pré-rempli. Vous pouvez tout ajuster.
+                {packIntact
+                  ? <>Pack <strong>{pack.nom}</strong> pré-rempli. Vous pouvez tout ajuster.</>
+                  : <>Vous avez modifié le pack <strong>{pack.nom}</strong> : le prix sera calculé sur votre devis.</>}
               </div>
             )}
 
@@ -553,11 +564,11 @@ export default function Devis() {
                   </dd>
                 </div>
               )}
-              {pack && (
+              {packIntact && (
                 <div className="rounded-lg bg-white/10 p-3">
                   <dt className="text-indigo-soft">Prix indicatif, pack {pack.nom}</dt>
                   <dd className="mt-1 font-display text-lg font-bold">
-                    {euro((pack.paliers.filter(([q]) => total >= q).pop() || pack.paliers[0])[1])} HT / {pack.unite || 'pièce'}
+                    {euro((pack.paliers.filter(([q]) => qtePack >= q).pop() || pack.paliers[0])[1])} HT / {pack.unite || 'pièce'}
                   </dd>
                 </div>
               )}
