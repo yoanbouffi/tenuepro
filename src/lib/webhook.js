@@ -38,6 +38,21 @@ export const uploadLogoToCloudinary = async (file) => {
   return { public_id: data.public_id, url: data.secure_url }
 }
 
+/** Upload d'une image du site (admin > Contenu) vers Cloudinary. Renvoie une URL optimisée. */
+export const uploadImageToCloudinary = async (file, folder = 'tenuepro/site') => {
+  const CLOUD  = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME ?? 'djq5gqxmj'
+  const PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
+  if (!PRESET) throw new Error('Upload Cloudinary non configuré (VITE_CLOUDINARY_UPLOAD_PRESET)')
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('upload_preset', PRESET)
+  formData.append('folder', folder)
+  const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD}/image/upload`, { method: 'POST', body: formData })
+  const data = await response.json().catch(() => ({}))
+  if (!response.ok) throw new Error(data.error?.message || `Erreur ${response.status}`)
+  return data.secure_url.replace('/upload/', '/upload/f_auto,q_auto,w_1600/')
+}
+
 export const notifyStatusChange = async (data) => {
   try {
     const response = await fetch(

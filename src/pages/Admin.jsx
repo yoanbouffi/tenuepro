@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { supabase } from '../lib/supabase'
+import ContenuAdmin from '../components/admin/ContenuAdmin'
 
 // ─── Constantes ────────────────────────────────────────────────────────────────
 
@@ -490,6 +491,7 @@ export default function Admin() {
             { key: 'devis',     label: 'Devis',     count: quotes.filter(q => q.status === 'sent').length },
             { key: 'commandes', label: 'Commandes', count: stats.commandes },
             { key: 'factures',  label: 'Factures',  count: invoices.filter(i => i.status === 'sent').length },
+            { key: 'contenu',   label: 'Contenu du site', count: 0 },
           ].map(tab => (
             <button
               key={tab.key}
@@ -515,6 +517,8 @@ export default function Admin() {
         {/* ══════════════════════════════════════════════════════════════════════
             TAB : DEMANDES
         ══════════════════════════════════════════════════════════════════════ */}
+        {activeTab === 'contenu' && <ContenuAdmin />}
+
         {activeTab === 'demandes' && (
           <section>
             <div className="flex flex-col sm:flex-row gap-3 mb-4">
