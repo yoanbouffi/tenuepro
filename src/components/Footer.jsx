@@ -12,7 +12,7 @@ export default function Footer() {
             <span className="font-display text-xl font-extrabold text-white">TenuePro</span>
           </Link>
           <p className="mt-4 max-w-sm text-sm leading-relaxed">
-            Atelier de marquage textile pour les professionnels : broderie, flocage et impression DTF sur les tenues de vos équipes.
+            Tenues professionnelles personnalisées pour les entreprises : broderie, flocage et impression DTF, contrôlées et livrées à La Réunion.
           </p>
           <p className="mt-4 text-sm font-semibold text-gold">{CONTACT.zone}</p>
         </div>

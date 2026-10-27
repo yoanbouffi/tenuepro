@@ -20,12 +20,12 @@ export default function Home() {
       <section className="bg-paper pt-16">
         <div className="wrap grid items-center gap-12 py-14 md:py-20 lg:grid-cols-[1.05fr_1fr]">
           <div>
-            <p className="eyebrow">Atelier de marquage textile · La Réunion</p>
+            <p className="eyebrow">Tenues professionnelles personnalisées · La Réunion</p>
             <h1 className="mt-4 font-display text-[2.6rem] font-extrabold leading-[1.02] tracking-tight text-indigo sm:text-6xl">
               Des tenues qui portent <span className="relative whitespace-nowrap">votre nom<svg className="absolute -bottom-2 left-0 h-3 w-full" viewBox="0 0 200 12" preserveAspectRatio="none" aria-hidden="true"><path d="M2 8 C 50 2, 150 2, 198 8" fill="none" stroke="#E8A33D" strokeWidth="3" strokeDasharray="8 6" strokeLinecap="round" /></svg></span>.
             </h1>
             <p className="lead mt-6 max-w-xl">
-              Polos, t-shirts, tabliers, casquettes : nous brodons et marquons les tenues de vos équipes, de la maquette à la livraison. Un seul interlocuteur, un rendu identique à chaque commande.
+              Polos, t-shirts, tabliers, casquettes : nous prenons en charge les tenues de vos équipes, de la maquette à la livraison. Un seul interlocuteur à La Réunion, chaque pièce contrôlée avant de vous être remise.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link to="/devis" className="btn-primary">Demander un devis <Arrow /></Link>
@@ -146,15 +146,15 @@ export default function Home() {
 
           <div className="mt-16 grid gap-6 rounded-2xl bg-indigo-mist p-8 md:grid-cols-[1.2fr_1fr_1fr] md:p-10">
             <div>
-              <h3 className="font-display text-2xl font-bold text-indigo">Un seul interlocuteur, quelle que soit la quantité.</h3>
+              <h3 className="font-display text-2xl font-bold text-indigo">Un seul interlocuteur, de la maquette à la livraison.</h3>
             </div>
             <div className="stitch pl-4">
-              <p className="font-semibold text-ink">Petites et moyennes séries</p>
-              <p className="mt-1 text-sm leading-relaxed text-ink-muted">Réalisées dans notre atelier à La Réunion, pour un contrôle total du rendu.</p>
+              <p className="font-semibold text-ink">Fabrication chez nos partenaires</p>
+              <p className="mt-1 text-sm leading-relaxed text-ink-muted">Vos pièces sont brodées et marquées par des ateliers partenaires sélectionnés, à partir des fichiers que vous avez validés.</p>
             </div>
             <div className="stitch pl-4">
-              <p className="font-semibold text-ink">Grandes séries</p>
-              <p className="mt-1 text-sm leading-relaxed text-ink-muted">Confiées à nos partenaires textile, avec vos fichiers, puis contrôlées et livrées par TenuePro.</p>
+              <p className="font-semibold text-ink">Contrôle et livraison à La Réunion</p>
+              <p className="mt-1 text-sm leading-relaxed text-ink-muted">Chaque pièce est vérifiée par TenuePro avant de vous être remise. En cas de défaut, nous le réglons avec le fabricant, pas vous.</p>
             </div>
           </div>
         </div>

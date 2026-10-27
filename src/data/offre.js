@@ -82,7 +82,7 @@ export const emplacementsPour = (pieceId) => EMPLACEMENTS_PAR_PIECE[pieceId] || 
 export const TAILLES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL']
 export const taillesPour = (pieceId) => (['casquettes', 'tabliers', 'sacs'].includes(pieceId) ? null : TAILLES)
 
-// Hypothèses de prix d'achat textile (HT, rendu atelier) utilisées pour les packs
+// Hypothèses de prix d'achat textile (HT, rendu La Réunion) utilisées pour les packs
 export const textileHT = { polo: 9, tshirt: 4.5, tablier: 8, casquette: 4 }
 
 // Prix par pièce, HT : un prix par palier de quantité (voir PALIERS).
@@ -242,7 +242,7 @@ export const ETAPES = [
   { titre: 'Votre demande en ligne', texte: 'Pièces, quantités, emplacements et logo : deux minutes suffisent.' },
   { titre: 'Conseil et maquette', texte: 'Nous vous proposons la technique adaptée, un devis détaillé et une maquette de votre logo.' },
   { titre: 'Validation', texte: 'Vous validez la maquette et le devis. Un acompte lance la production.' },
-  { titre: 'Production contrôlée', texte: 'Petites séries dans notre atelier, grandes séries chez nos partenaires textile. Chaque pièce est contrôlée par TenuePro.' },
+  { titre: 'Fabrication et contrôle', texte: 'Vos pièces sont fabriquées par nos ateliers partenaires, puis contrôlées une à une par TenuePro.' },
   { titre: 'Livraison', texte: 'Livraison ou remise en main propre partout à La Réunion.' },
 ]
 
