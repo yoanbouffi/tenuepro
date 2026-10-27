@@ -20,21 +20,36 @@ export function Arrow({ className = 'h-4 w-4' }) {
   )
 }
 
-/** Scène métier : photo + étiquette « technique · emplacement » */
-export function SceneCard({ m, to, tall = false }) {
+/** Bandeau-titre posé sur le haut de la photo (couvre les visages, laisse voir le marquage) */
+export function Bandeau({ m, grand = false }) {
+  return (
+    <div className="absolute inset-x-0 top-0 flex items-center bg-indigo px-5" style={{ height: `${m.bande || 36}%` }}>
+      <span className="pointer-events-none absolute inset-x-2 bottom-2 top-2 rounded-md border border-dashed border-gold/70" aria-hidden="true" />
+      <div className="relative min-w-0">
+        <p className={`font-display font-extrabold leading-[1.05] text-white ${grand ? 'text-2xl sm:text-4xl' : 'text-xl sm:text-2xl'}`}>{m.nom}</p>
+        {grand && m.pieces?.length > 0 && <p className="mt-1.5 truncate text-sm font-medium text-gold">{m.pieces.join(' · ')}</p>}
+      </div>
+    </div>
+  )
+}
+
+export function Etiquette({ children, className = '' }) {
+  return (
+    <span className={`absolute bottom-4 left-4 inline-flex items-center gap-2 rounded-full bg-white/95 px-3 py-1.5 text-xs font-semibold text-indigo shadow-sm ${className}`}>
+      <span className="h-2 w-2 rounded-full ring-2 ring-gold" aria-hidden="true" />{children}
+    </span>
+  )
+}
+
+/** Scène métier : photo + bandeau-titre + étiquette « technique · emplacement » */
+export function SceneCard({ m, to }) {
   return (
     <Link to={to} className="group block">
-      <div className={`relative overflow-hidden rounded-xl bg-indigo-mist ${tall ? 'aspect-[4/3]' : 'aspect-[16/10]'}`}>
-        <img src={m.img} alt={`Tenues brodées — ${m.nom}`} loading="lazy"
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
-        <div className="absolute inset-0 bg-gradient-to-t from-indigo-deep/85 via-indigo-deep/10 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 p-5">
-          <span className="inline-flex items-center gap-2 rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-indigo">
-            <span className="h-2 w-2 rounded-full ring-2 ring-gold" aria-hidden="true" />
-            {m.label}
-          </span>
-          <h3 className="mt-3 font-display text-xl font-bold text-white">{m.nom}</h3>
-        </div>
+      <div className="relative aspect-[16/10] overflow-hidden rounded-xl bg-indigo-mist">
+        <img src={m.img} alt={`Tenues personnalisées — ${m.nom}`} loading="lazy"
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]" style={{ transformOrigin: 'bottom' }} />
+        <Bandeau m={m} />
+        <Etiquette>{m.label}</Etiquette>
       </div>
     </Link>
   )

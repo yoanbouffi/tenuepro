@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { submitDevisForm, uploadLogoToCloudinary } from '../lib/webhook'
 import { buildAllMockupUrls } from '../lib/mockups'
-import { PIECES, EMPLACEMENTS, SECTEURS, DELAIS, euro, emplacementsPour } from '../data/offre'
+import { PIECES, EMPLACEMENTS, SECTEURS, DELAIS, DELAI_MINIMUM, euro, emplacementsPour, taillesPour } from '../data/offre'
 import { useOffre } from '../content/OffreContext'
 import { Arrow } from '../components/ui'
 
@@ -16,6 +16,7 @@ const TECHS = [
 const techLabel = (id) => TECHS.find((t) => t.id === id)?.label || id
 const techTexte = (id) => (id === 'conseil' ? 'technique à conseiller' : id === 'dtf' ? 'impression DTF' : techLabel(id).toLowerCase())
 const emplLabel = (id) => EMPLACEMENTS.find((e) => e.id === id)?.label || id
+const emplAide = (id) => EMPLACEMENTS.find((e) => e.id === id)?.aide || ''
 const pieceLabel = (id) => PIECES.find((p) => p.id === id)?.label || id
 
 /** Marquages d'un pack ; accepte aussi l'ancien format (technique + emplacements communs). */
@@ -25,17 +26,42 @@ function marquagesDuPack(devis) {
   return Object.fromEntries(Object.keys(devis.quantities || {}).map((id) => [id, Object.fromEntries((devis.emplacements || []).map((e) => [e, tech]))]))
 }
 
+const HAUTS = ['polos', 'tshirts', 'chemises', 'vestes']
+
+/** Petit schéma devant / dos qui montre où se trouve chaque emplacement */
+function Schema({ selection }) {
+  const forme = 'M30 8 L42 4 Q50 12 58 4 L70 8 L92 22 L84 38 L74 32 L74 94 L26 94 L26 32 L16 38 L8 22 Z'
+  const points = { coeur: [62, 34, 0], droite: [38, 34, 0], manche: [84, 27, 0], nuque: [50, 15, 1], prenom: [50, 30, 1], dos: [50, 52, 1] }
+  return (
+    <svg viewBox="0 0 220 112" className="h-28 w-auto shrink-0" role="img" aria-label="Schéma des emplacements, devant et dos">
+      {[0, 1].map((cote) => (
+        <g key={cote} transform={`translate(${cote * 118} 0)`}>
+          <path d={forme} fill="#F4F2FA" stroke="#241675" strokeWidth="1.5" strokeLinejoin="round" />
+          {cote === 1 && <path d="M42 4 Q50 9 58 4" fill="none" stroke="#241675" strokeWidth="1.5" />}
+          <text x="50" y="108" textAnchor="middle" fontSize="9" fontWeight="600" fill="#5E5A78" fontFamily="Inter, sans-serif">{cote ? 'Dos' : 'Devant'}</text>
+          {Object.entries(points).filter(([, [, , c]]) => c === cote).map(([id, [x, y]]) => {
+            const on = !!selection[id]
+            return id === 'dos' || id === 'prenom'
+              ? <rect key={id} x={x - (id === 'dos' ? 14 : 12)} y={y - (id === 'dos' ? 12 : 4)} width={id === 'dos' ? 28 : 24} height={id === 'dos' ? 24 : 8} rx="2" fill={on ? '#E8A33D' : 'none'} stroke={on ? '#241675' : '#C9C3E0'} strokeWidth="1.2" strokeDasharray={on ? '' : '2 2'} />
+              : <circle key={id} cx={x} cy={y} r={on ? 5 : 3.5} fill={on ? '#E8A33D' : 'none'} stroke={on ? '#241675' : '#C9C3E0'} strokeWidth="1.2" strokeDasharray={on ? '' : '2 2'} />
+          })}
+        </g>
+      ))}
+    </svg>
+  )
+}
+
 /** Résumé pour n8n : une technique, plusieurs, ou à conseiller. */
 function techniqueGlobale(marquages) {
   const t = [...new Set(Object.values(marquages).flatMap((m) => Object.values(m)).filter((x) => x !== 'conseil'))]
   return t.length === 0 ? 'ne_sait_pas' : t.length === 1 ? t[0] : 'les_deux'
 }
 
-const STEPS = ['Pièces', 'Marquage', 'Projet', 'Coordonnées']
+const STEPS = ['Pièces', 'Marquage', 'Tailles & délai', 'Coordonnées']
 
 const initial = {
   produits: [], quantities: {}, marquages: {}, logo: null,
-  secteur: '', delai: '', tailles: '', description: '',
+  secteur: '', delai: '', tailles: {}, description: '',
   prenom: '', nom: '', entreprise: '', siret: '', email: '', telephone: '',
 }
 
@@ -105,12 +131,26 @@ export default function Devis() {
   const setTech = (piece, empl, tech) =>
     setForm((f) => ({ ...f, marquages: { ...f.marquages, [piece]: { ...f.marquages[piece], [empl]: tech } } }))
 
+  const sommeTailles = (id) => Object.values(form.tailles[id] || {}).reduce((a, n) => a + (parseInt(n, 10) || 0), 0)
+  const setTaille = (id, t, v) => {
+    setForm((f) => ({ ...f, tailles: { ...f.tailles, [id]: { ...(f.tailles[id] || {}), [t]: v } } }))
+    setErrors((e) => ({ ...e, tailles: '' }))
+  }
+  const taillesTexte = (id) => {
+    if (!taillesPour(id)) return 'taille unique'
+    const t = Object.entries(form.tailles[id] || {}).filter(([, n]) => parseInt(n, 10) > 0)
+    return t.length ? t.map(([k, n]) => `${k} ${n}`).join(' · ') : 'à préciser'
+  }
+
   const validate = (s) => {
     const e = {}
     if (s === 0) {
       if (!form.produits.length) e.produits = 'Choisissez au moins une pièce.'
       else if (form.produits.some((id) => !(parseInt(form.quantities[id], 10) > 0))) e.produits = 'Indiquez une quantité pour chaque pièce choisie.'
-      else if (total < MINIMUM_PIECES) e.produits = `Le minimum est de ${MINIMUM_PIECES} pièces au total (actuellement ${total}).`
+      else {
+        const bas = form.produits.filter((id) => parseInt(form.quantities[id], 10) < MINIMUM_PIECES)
+        if (bas.length) e.produits = `Il faut au moins ${MINIMUM_PIECES} pièces par vêtement. À compléter : ${bas.map((id) => `${pieceLabel(id)} (${form.quantities[id]})`).join(', ')}.`
+      }
     }
     if (s === 1) {
       const sans = form.produits.filter((id) => !Object.keys(form.marquages[id] || {}).length)
@@ -118,6 +158,8 @@ export default function Devis() {
     }
     if (s === 2) {
       if (!form.secteur) e.secteur = 'Choisissez votre secteur.'
+      const mal = form.produits.filter((id) => taillesPour(id) && sommeTailles(id) > 0 && sommeTailles(id) !== parseInt(form.quantities[id], 10))
+      if (mal.length) e.tailles = `La répartition ne correspond pas à la quantité pour : ${mal.map((id) => `${pieceLabel(id)} (${sommeTailles(id)} sur ${form.quantities[id]})`).join(', ')}. Corrigez-la, ou laissez tout à zéro pour la préciser plus tard.`
     }
     if (s === 3) {
       if (!form.prenom.trim()) e.prenom = 'Indiquez votre prénom.'
@@ -156,7 +198,8 @@ export default function Devis() {
       pack ? `Pack : ${pack.nom}` : null,
       'Marquage :',
       ...form.produits.map((id) => `- ${pieceLabel(id)} (${form.quantities[id]}) : ${Object.entries(form.marquages[id] || {}).map(([e, t]) => `${emplLabel(e)} : ${techTexte(t)}`).join(', ')}`),
-      form.tailles.trim() ? `Tailles : ${form.tailles.trim()}` : null,
+      'Tailles :',
+      ...form.produits.map((id) => `- ${pieceLabel(id)} : ${taillesTexte(id)}`),
       form.description.trim() ? `\n${form.description.trim()}` : null,
     ].filter(Boolean).join('\n')
 
@@ -175,6 +218,7 @@ export default function Devis() {
       marquage: techniqueGlobale(form.marquages),
       emplacements: [...new Set(Object.values(form.marquages).flatMap((m) => Object.keys(m)))],
       marquages: form.marquages,
+      tailles: Object.fromEntries(form.produits.filter(taillesPour).map((id) => [id, Object.fromEntries(Object.entries(form.tailles[id] || {}).filter(([, n]) => parseInt(n, 10) > 0).map(([k, n]) => [k, parseInt(n, 10)]))])),
       pack: pack?.id || null,
       logo_url: logoUrl,
       logo_public_id: logoPublicId,
@@ -236,7 +280,7 @@ export default function Devis() {
             {step === 0 && (
               <fieldset>
                 <legend className="font-display text-xl font-bold text-indigo">Quelles pièces, et combien ?</legend>
-                <p className="mt-1 text-sm text-ink-muted">Minimum {MINIMUM_PIECES} pièces au total. Les tailles se précisent plus loin.</p>
+                <p className="mt-1 text-sm text-ink-muted">{MINIMUM_PIECES} pièces minimum par vêtement, par exemple {MINIMUM_PIECES} t-shirts et {MINIMUM_PIECES} casquettes. Vous pourrez mélanger les tailles à l’étape 3.</p>
                 <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
                   {PIECES.map((p) => {
                     const on = form.produits.includes(p.id)
@@ -259,7 +303,11 @@ export default function Devis() {
                                 onChange={(e) => { setForm((f) => ({ ...f, quantities: { ...f.quantities, [p.id]: e.target.value } })); setErrors((x) => ({ ...x, produits: '' })) }}
                                 className="field py-1.5" aria-label={`Quantité de ${p.label}`} />
                             </label>
-                          ) : <p className="text-xs leading-snug text-ink-muted">{p.usage}</p>}
+                          ) : null}
+                          {on && (parseInt(form.quantities[p.id], 10) || 0) < MINIMUM_PIECES && (
+                            <p className="mt-1.5 text-xs font-medium text-gold-deep">Minimum {MINIMUM_PIECES}</p>
+                          )}
+                          {!on && <p className="text-xs leading-snug text-ink-muted">{p.usage}</p>}
                         </div>
                       </div>
                     )
@@ -279,38 +327,56 @@ export default function Devis() {
                       const piece = PIECES.find((p) => p.id === id)
                       const m = form.marquages[id] || {}
                       return (
-                        <div key={id} className="rounded-xl border border-ink-line p-4">
+                        <div key={id} className="rounded-xl border border-ink-line p-4 sm:p-5">
                           <div className="flex items-center gap-3">
                             <img src={piece?.img} alt="" className="h-12 w-12 rounded-lg object-cover" />
                             <p className="font-display text-lg font-bold text-indigo">{pieceLabel(id)} <span className="font-sans text-sm font-medium text-ink-muted">× {form.quantities[id]}</span></p>
                           </div>
-                          <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label={`Emplacements — ${pieceLabel(id)}`}>
-                            {emplacementsPour(id).map((e) => {
-                              const on = !!m[e]
-                              return (
-                                <button key={e} type="button" onClick={() => toggleEmplacement(id, e)} aria-pressed={on}
-                                  className={`rounded-full border-2 px-3.5 py-1.5 text-sm font-medium ${on ? 'border-indigo bg-indigo text-white' : 'border-ink-line text-ink hover:border-indigo/40'}`}>
-                                  {on ? '✓ ' : '+ '}{emplLabel(e)}
-                                </button>
-                              )
-                            })}
+                          <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-start">
+                            <div className="flex-1">
+                              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-gold-deep">Où&nbsp;?</p>
+                              <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label={`Emplacements — ${pieceLabel(id)}`}>
+                                {emplacementsPour(id).map((e) => {
+                                  const on = !!m[e]
+                                  return (
+                                    <button key={e} type="button" onClick={() => toggleEmplacement(id, e)} aria-pressed={on} title={emplAide(e)}
+                                      className={`rounded-full border-2 px-3.5 py-1.5 text-sm font-medium ${on ? 'border-indigo bg-indigo text-white' : 'border-ink-line text-ink hover:border-indigo/40'}`}>
+                                      {on ? '✓ ' : '+ '}{emplLabel(e)}
+                                    </button>
+                                  )
+                                })}
+                              </div>
+                            </div>
+                            {HAUTS.includes(id) && <Schema selection={m} />}
                           </div>
                           {Object.keys(m).length > 0 && (
-                            <ul className="mt-4 space-y-2.5 border-t border-dashed border-gold/70 pt-4">
-                              {Object.entries(m).map(([e, t]) => (
-                                <li key={e} className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                                  <span className="text-sm font-semibold text-ink">{emplLabel(e)}</span>
-                                  <div className="grid grid-cols-4 gap-1 rounded-lg bg-indigo-mist p-1" role="radiogroup" aria-label={`Technique — ${pieceLabel(id)}, ${emplLabel(e)}`}>
-                                    {TECHS.map((tk) => (
-                                      <button key={tk.id} type="button" role="radio" aria-checked={t === tk.id} onClick={() => setTech(id, e, tk.id)}
-                                        className={`rounded-md px-2.5 py-1.5 text-xs font-semibold sm:text-sm ${t === tk.id ? 'bg-white text-indigo shadow-sm' : 'text-ink-muted hover:text-indigo'}`}>
-                                        {tk.label}
-                                      </button>
-                                    ))}
-                                  </div>
-                                </li>
-                              ))}
-                            </ul>
+                            <div className="mt-5 border-t border-dashed border-gold/70 pt-4">
+                              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-gold-deep">Comment&nbsp;?</p>
+                              <ul className="mt-2 space-y-3">
+                                {Object.entries(m).map(([e, t]) => (
+                                  <li key={e} className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+                                    <span className="text-sm">
+                                      <span className="font-semibold text-ink">{emplLabel(e)}</span>
+                                      {emplAide(e) && <span className="block text-xs text-ink-muted">{emplAide(e)}</span>}
+                                    </span>
+                                    <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={`Technique — ${pieceLabel(id)}, ${emplLabel(e)}`}>
+                                      {TECHS.map((tk) => {
+                                        const sel = t === tk.id
+                                        return (
+                                          <button key={tk.id} type="button" role="radio" aria-checked={sel} onClick={() => setTech(id, e, tk.id)}
+                                            className={`inline-flex items-center gap-1.5 rounded-lg border-2 px-3 py-1.5 text-sm font-semibold ${sel ? 'border-indigo bg-indigo text-white' : 'border-ink-line bg-white text-ink-muted hover:border-indigo/50 hover:text-indigo'}`}>
+                                            <span className={`flex h-3.5 w-3.5 items-center justify-center rounded-full border-2 ${sel ? 'border-gold bg-gold' : 'border-ink-line'}`} aria-hidden="true">
+                                              {sel && <span className="h-1.5 w-1.5 rounded-full bg-indigo" />}
+                                            </span>
+                                            {tk.label}
+                                          </button>
+                                        )
+                                      })}
+                                    </div>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
                           )}
                         </div>
                       )
@@ -350,8 +416,43 @@ export default function Devis() {
             )}
 
             {step === 2 && (
-              <div className="space-y-6">
-                <h2 className="font-display text-xl font-bold text-indigo">Votre projet</h2>
+              <div className="space-y-8">
+                <fieldset>
+                  <legend className="font-display text-xl font-bold text-indigo">Répartition des tailles</legend>
+                  <p className="mt-1 text-sm text-ink-muted">Indiquez combien de pièces par taille. Pas encore décidé&nbsp;? Laissez à zéro, nous la demanderons avant la production.</p>
+                  <div className="mt-5 space-y-4">
+                    {form.produits.map((id) => {
+                      const tailles = taillesPour(id)
+                      const qte = parseInt(form.quantities[id], 10) || 0
+                      const somme = sommeTailles(id)
+                      return (
+                        <div key={id} className="rounded-xl border border-ink-line p-4">
+                          <div className="flex flex-wrap items-baseline justify-between gap-2">
+                            <p className="font-display text-lg font-bold text-indigo">{pieceLabel(id)}</p>
+                            {tailles ? (
+                              <p className={`text-sm font-semibold tabular-nums ${somme === 0 ? 'text-ink-muted' : somme === qte ? 'text-[#067647]' : 'text-[#B42318]'}`}>
+                                {somme === 0 ? `À préciser plus tard · ${qte} pièces` : `${somme} / ${qte} réparties`}
+                              </p>
+                            ) : <p className="text-sm text-ink-muted">Taille unique · {qte} pièces</p>}
+                          </div>
+                          {tailles && (
+                            <div className="mt-3 grid grid-cols-4 gap-2 sm:grid-cols-7">
+                              {tailles.map((t) => (
+                                <label key={t} className="text-center">
+                                  <span className="mb-1 block text-xs font-semibold text-ink-muted">{t}</span>
+                                  <input type="number" min="0" inputMode="numeric" placeholder="0" aria-label={`${pieceLabel(id)}, taille ${t}`}
+                                    className="field px-1 py-2 text-center tabular-nums" value={form.tailles[id]?.[t] ?? ''} onChange={(e) => setTaille(id, t, e.target.value)} />
+                                </label>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                  {err('tailles')}
+                </fieldset>
+
                 <div className="grid gap-5 sm:grid-cols-2">
                   <div>
                     <label htmlFor="secteur" className="label">Secteur d’activité</label>
@@ -362,20 +463,17 @@ export default function Devis() {
                     {err('secteur')}
                   </div>
                   <div>
-                    <label htmlFor="delai" className="label">Pour quand ?</label>
+                    <label htmlFor="delai" className="label">Pour quand&nbsp;?</label>
                     <select id="delai" className="field" value={form.delai} onChange={(e) => set('delai', e.target.value)}>
                       <option value="">Choisir…</option>
                       {DELAIS.map((d) => <option key={d}>{d}</option>)}
                     </select>
+                    <p className="mt-1 text-xs text-ink-muted">{DELAI_MINIMUM}</p>
                   </div>
                 </div>
                 <div>
-                  <label htmlFor="tailles" className="label">Répartition des tailles <span className="font-normal text-ink-muted">(si vous la connaissez)</span></label>
-                  <input id="tailles" className="field" placeholder="Ex. 4 S, 8 M, 6 L, 2 XL" value={form.tailles} onChange={(e) => set('tailles', e.target.value)} />
-                </div>
-                <div>
                   <label htmlFor="description" className="label">Précisions</label>
-                  <textarea id="description" rows={5} className="field" placeholder="Couleurs des pièces, texte à ajouter, prénoms, date impérative, budget…" value={form.description} onChange={(e) => set('description', e.target.value)} />
+                  <textarea id="description" rows={5} className="field" placeholder="Couleur des pièces, coupe homme ou femme, texte à ajouter, liste des prénoms, date impérative…" value={form.description} onChange={(e) => set('description', e.target.value)} />
                 </div>
               </div>
             )}
@@ -425,13 +523,13 @@ export default function Devis() {
                 <dt className="text-indigo-soft">Pièces</dt>
                 <dd className="mt-1 font-medium">
                   {form.produits.length ? form.produits.map((id) => (
-                    <span key={id} className="flex justify-between gap-3"><span>{PIECES.find((p) => p.id === id)?.label}</span><span className="tabular-nums">{form.quantities[id] || '—'}</span></span>
+                    <span key={id} className="flex justify-between gap-3"><span>{PIECES.find((p) => p.id === id)?.label}</span><span className={`tabular-nums ${(parseInt(form.quantities[id], 10) || 0) < MINIMUM_PIECES ? 'text-gold' : ''}`}>{form.quantities[id] || '—'}{(parseInt(form.quantities[id], 10) || 0) < MINIMUM_PIECES && <span className="ml-1 text-xs font-normal">(min. {MINIMUM_PIECES})</span>}</span></span>
                   )) : '—'}
                 </dd>
               </div>
               <div className="flex justify-between border-t border-dashed border-gold/50 pt-3">
                 <dt className="text-indigo-soft">Total</dt>
-                <dd className={`font-display text-lg font-bold ${total && total < MINIMUM_PIECES ? 'text-gold' : ''}`}>{total} pièce{total > 1 ? 's' : ''}</dd>
+                <dd className="font-display text-lg font-bold">{total} pièce{total > 1 ? 's' : ''}</dd>
               </div>
               {Object.values(form.marquages).some((m) => Object.keys(m).length) && (
                 <div>

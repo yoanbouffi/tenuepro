@@ -91,6 +91,7 @@ export const submitDevisForm = async (formData) => {
         emplacements:  formData.emplacements  || [],
         pack:          formData.pack          || null,
         marquages:     formData.marquages     || {},
+        tailles:       formData.tailles       || {},
         logo_url:       formData.logo_url       || null,
         logo_public_id: formData.logo_public_id || null,
         mockup_urls:    formData.mockup_urls    || [],

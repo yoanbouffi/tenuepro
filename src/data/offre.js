@@ -12,7 +12,8 @@ export const CONTACT = {
   zone: 'Basé à La Réunion — Intervention sur toute l’île',
 }
 
-export const MINIMUM_PIECES = 10
+// Minimum par type de vêtement (ex. 20 t-shirts ET 20 casquettes)
+export const MINIMUM_PIECES = 20
 
 // Identifiants = ceux attendus par n8n et les maquettes Cloudinary (src/lib/mockups.js)
 export const PIECES = [
@@ -53,26 +54,33 @@ export const TECHNIQUES = [
 ]
 
 export const EMPLACEMENTS = [
-  { id: 'coeur',   label: 'Côté cœur' },
-  { id: 'dos',     label: 'Dos' },
-  { id: 'manche',  label: 'Manche' },
-  { id: 'nuque',   label: 'Nuque' },
-  { id: 'prenom',  label: 'Prénom ou nom' },
-  { id: 'face',    label: 'Face avant' },
-  { id: 'cote',    label: 'Côté' },
-  { id: 'arriere', label: 'Arrière' },
-  { id: 'poitrine', label: 'Poitrine' },
-  { id: 'bas',     label: 'Bas du tablier' },
+  { id: 'coeur',    label: 'Poitrine gauche', aide: 'côté cœur, le plus courant pour un logo' },
+  { id: 'droite',   label: 'Poitrine droite', aide: 'souvent pour un prénom ou un second logo' },
+  { id: 'dos',      label: 'Dos', aide: 'grand format, entre les omoplates' },
+  { id: 'nuque',    label: 'Nuque', aide: 'petit marquage juste sous le col, au dos' },
+  { id: 'manche',   label: 'Manche', aide: 'haut du bras' },
+  { id: 'prenom',   label: 'Prénom ou nom', aide: 'personnalisé pour chaque pièce' },
+  { id: 'face',     label: 'Face avant', aide: 'devant, au-dessus de la visière' },
+  { id: 'cote',     label: 'Côté', aide: 'sur le côté gauche' },
+  { id: 'arriere',  label: 'Arrière', aide: 'au-dessus de la boucle de réglage' },
+  { id: 'poitrine', label: 'Haut du tablier', aide: 'au niveau de la poitrine' },
+  { id: 'bas',      label: 'Bas du tablier', aide: 'sur la poche ou le bas' },
+  { id: 'recto',    label: 'Recto', aide: 'face principale du sac' },
+  { id: 'verso',    label: 'Verso', aide: 'face arrière du sac' },
 ]
 
 // Emplacements proposés selon la pièce
 export const EMPLACEMENTS_PAR_PIECE = {
   casquettes: ['face', 'cote', 'arriere'],
   tabliers: ['poitrine', 'bas', 'prenom'],
-  sacs: ['face', 'dos'],
-  default: ['coeur', 'dos', 'manche', 'nuque', 'prenom'],
+  sacs: ['recto', 'verso'],
+  default: ['coeur', 'droite', 'dos', 'nuque', 'manche', 'prenom'],
 }
 export const emplacementsPour = (pieceId) => EMPLACEMENTS_PAR_PIECE[pieceId] || EMPLACEMENTS_PAR_PIECE.default
+
+// Tailles proposées (null = taille unique)
+export const TAILLES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL']
+export const taillesPour = (pieceId) => (['casquettes', 'tabliers', 'sacs'].includes(pieceId) ? null : TAILLES)
 
 // Hypothèses de prix d'achat textile (HT, rendu atelier) utilisées pour les packs
 export const textileHT = { polo: 9, tshirt: 4.5, tablier: 8, casquette: 4 }
@@ -103,7 +111,7 @@ export const PACKS = [
     id: 'restauration',
     nom: 'Salle & cuisine',
     pour: 'Restaurants, bars, snacks, traiteurs',
-    img: '/images/scene-restauration.webp',
+    img: '/images/tablier.webp',
     contenu: 'Polo + tablier',
     marquage: 'Logo brodé sur les deux pièces',
     unite: 'la tenue',
@@ -114,7 +122,7 @@ export const PACKS = [
     id: 'evenement',
     nom: 'Événement',
     pour: 'Associations, salons, séminaires, collectivités',
-    img: '/images/scene-association.webp',
+    img: '/images/tshirt.webp',
     contenu: 'T-shirt',
     marquage: 'Visuel couleur côté cœur + grand visuel au dos (A3)',
     prix: [20.5, 20],
@@ -150,6 +158,7 @@ export const OPTIONS_PACKS = [
 export const METIERS = [
   {
     id: 'restauration',
+    bande: 40, // hauteur du bandeau-titre en haut de la photo (%)
     nom: 'Restauration & bars',
     img: '/images/scene-restauration.webp',
     label: 'Broderie · tablier et polo',
@@ -160,6 +169,7 @@ export const METIERS = [
   },
   {
     id: 'hotellerie',
+    bande: 38, // hauteur du bandeau-titre en haut de la photo (%)
     nom: 'Hôtellerie & tourisme',
     img: '/images/scene-hotellerie.webp',
     label: 'Broderie · côté cœur',
@@ -170,6 +180,7 @@ export const METIERS = [
   },
   {
     id: 'entreprise',
+    bande: 55, // hauteur du bandeau-titre en haut de la photo (%)
     nom: 'Entreprises & collectivités',
     img: '/images/scene-entreprise.webp',
     label: 'Broderie · côté cœur',
@@ -180,6 +191,7 @@ export const METIERS = [
   },
   {
     id: 'btp',
+    bande: 30, // hauteur du bandeau-titre en haut de la photo (%)
     nom: 'BTP & artisans',
     img: '/images/scene-btp.webp',
     label: 'Broderie cœur · DTF dos',
@@ -190,6 +202,7 @@ export const METIERS = [
   },
   {
     id: 'association',
+    bande: 52, // hauteur du bandeau-titre en haut de la photo (%)
     nom: 'Associations & événements',
     img: '/images/scene-association.webp',
     label: 'DTF · cœur et dos',
@@ -200,6 +213,7 @@ export const METIERS = [
   },
   {
     id: 'club',
+    bande: 30, // hauteur du bandeau-titre en haut de la photo (%)
     nom: 'Clubs sportifs',
     img: '/images/scene-club.webp',
     label: 'Flocage · nom et numéro',
@@ -217,12 +231,12 @@ export const SECTEURS = [
 ]
 
 export const DELAIS = [
-  'Date précise (à indiquer dans le message)',
-  'Sous 3 semaines',
   'Sous 1 mois',
   'Sous 2 mois',
+  'Date précise (à indiquer dans les précisions)',
   'Pas de contrainte particulière',
 ]
+export const DELAI_MINIMUM = 'Comptez au minimum un mois entre la validation du devis et la livraison.'
 
 export const ETAPES = [
   { titre: 'Votre demande en ligne', texte: 'Pièces, quantités, emplacements et logo : deux minutes suffisent.' },

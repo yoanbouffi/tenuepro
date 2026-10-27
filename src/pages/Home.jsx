@@ -4,8 +4,8 @@ import { useOffre } from '../content/OffreContext'
 import { SectionHead, SceneCard, PackCard, Faq, CtaBand, Arrow } from '../components/ui'
 
 const faq = (MINIMUM_PIECES) => [
-  ['Quelle quantité minimum ?', `Nous travaillons à partir de ${MINIMUM_PIECES} pièces par commande, toutes pièces confondues. Les packs démarrent à 20 pièces et les prix baissent avec la quantité.`],
-  ['Quels sont les délais ?', 'Ils dépendent de la quantité, de la technique et de la provenance des textiles. Le délai est confirmé sur votre devis. Si vous avez une date impérative, précisez-la dans votre demande.'],
+  ['Quelle quantité minimum ?', `${MINIMUM_PIECES} pièces minimum par vêtement : par exemple ${MINIMUM_PIECES} t-shirts et ${MINIMUM_PIECES} casquettes. Les tailles peuvent être mélangées, et les prix baissent avec la quantité.`],
+  ['Quels sont les délais ?', 'Comptez au minimum un mois entre la validation du devis et la livraison. Le délai exact dépend de la quantité, de la technique et de la provenance des textiles, et il est confirmé sur votre devis. Si vous avez une date impérative, précisez-la dans votre demande.'],
   ['Mon logo doit-il être dans un format particulier ?', 'Un fichier vectoriel (AI, PDF, SVG) est idéal, mais un PNG ou un JPG de bonne qualité suffit pour démarrer. Nous préparons le fichier de broderie ou d’impression et vous montrons la maquette avant toute production.'],
   ['Pouvons-nous commencer par un seul service ?', 'Oui. Beaucoup de structures commencent par une équipe pilote. Le fichier de votre logo est conservé : les commandes suivantes gardent exactement le même rendu.'],
   ['Travaillez-vous avec les collectivités ?', 'Oui. Nous établissons des devis détaillés pour les services publics, avec facturation via Chorus Pro.'],
@@ -33,7 +33,7 @@ export default function Home() {
             </div>
             <dl className="mt-10 grid max-w-lg grid-cols-3 gap-4 text-sm">
               {[
-                [`Dès ${MINIMUM_PIECES}`, 'pièces par commande'],
+                [`Dès ${MINIMUM_PIECES}`, 'pièces par vêtement'],
                 ['3', 'techniques de marquage'],
                 ['Maquette', 'avant production'],
               ].map(([k, v]) => (
@@ -51,7 +51,7 @@ export default function Home() {
               <span className="stitch-frame !inset-3" aria-hidden="true" />
             </div>
             <div className="absolute -bottom-8 -left-4 w-[52%] overflow-hidden rounded-xl border-4 border-paper shadow-xl sm:-left-10">
-              <img src="/images/scene-restauration.webp" alt="Équipe de restaurant en polos et tabliers brodés" className="aspect-[4/3] w-full object-cover" />
+              <img src="/images/scene-btp.webp" alt="Équipe en t-shirts marqués au dos sur un chantier" className="aspect-[4/3] w-full object-cover object-[50%_70%]" />
             </div>
             <div className="absolute -right-2 top-6 rounded-lg bg-white px-4 py-3 shadow-lg sm:-right-6">
               <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-gold-deep">Broderie</p>

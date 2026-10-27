@@ -4,7 +4,7 @@ export const SITE_URL = 'https://tenuepro.re'
 export const SEO = {
   '/': {
     title: 'TenuePro — Broderie, flocage et impression DTF à La Réunion',
-    description: 'Tenues professionnelles brodées et marquées à votre logo à La Réunion : polos, t-shirts, tabliers, casquettes. Dès 10 pièces, devis en ligne avec maquette.',
+    description: 'Tenues professionnelles brodées et marquées à votre logo à La Réunion : polos, t-shirts, tabliers, casquettes. Dès 20 pièces par vêtement, devis en ligne avec maquette.',
   },
   '/packs': {
     title: 'Packs et tarifs — Tenues personnalisées pour professionnels | TenuePro',

@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { euro, lc } from '../data/offre'
 import { useOffre } from '../content/OffreContext'
-import { CtaBand, Arrow } from '../components/ui'
+import { CtaBand, Arrow, Bandeau, Etiquette } from '../components/ui'
 
 export default function Solutions() {
   const { METIERS, PACKS } = useOffre()
@@ -34,9 +34,8 @@ export default function Solutions() {
               <div className={`wrap grid items-center gap-10 py-16 md:grid-cols-2 md:gap-16 ${i % 2 ? 'md:[&>*:first-child]:order-2' : ''}`}>
                 <div className="relative overflow-hidden rounded-2xl bg-indigo-mist">
                   <img src={m.img} alt={`Tenues personnalisées — ${m.nom}`} loading="lazy" className="aspect-[16/11] w-full object-cover" />
-                  <span className="absolute bottom-4 left-4 inline-flex items-center gap-2 rounded-full bg-white/95 px-3 py-1.5 text-xs font-semibold text-indigo">
-                    <span className="h-2 w-2 rounded-full ring-2 ring-gold" aria-hidden="true" />{m.label}
-                  </span>
+                  <Bandeau m={m} grand />
+                  <Etiquette>{m.label}</Etiquette>
                 </div>
                 <div>
                   <p className="eyebrow">{String(i + 1).padStart(2, '0')}</p>

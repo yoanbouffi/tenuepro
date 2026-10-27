@@ -292,6 +292,11 @@ export default function ContenuAdmin() {
                       </Champ>
                     </div>
                     <ChoixImage value={m.img} onChange={(v) => setMetier(i, 'img', v)} />
+                    <label className="block">
+                      <span className="label">Hauteur du bandeau-titre sur la photo : {m.bande || 36} %</span>
+                      <input type="range" min="20" max="70" value={m.bande || 36} onChange={(e) => setMetier(i, 'bande', Number(e.target.value))} className="w-full max-w-sm accent-[#241675]" />
+                      <span className="block text-xs text-ink-muted">Le bandeau doit couvrir les visages et laisser voir le marquage.</span>
+                    </label>
                     <div className="flex flex-wrap items-center justify-between gap-3 border-t border-dashed border-ink-line pt-4">
                       <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={!!m.masque} onChange={(e) => setMetier(i, 'masque', e.target.checked)} /> Masquer ce métier sur le site</label>
                       <Ordre i={i} n={draft.METIERS.length}
@@ -312,7 +317,7 @@ export default function ContenuAdmin() {
         <div className="mt-6 grid gap-6 lg:grid-cols-2">
           <div className="space-y-4 rounded-xl border border-ink-line bg-white p-5">
             <h3 className="font-display text-lg font-bold text-indigo">Quantités</h3>
-            <Champ label="Minimum de pièces par commande" aide="Vérifié dans le formulaire de devis">
+            <Champ label="Minimum par type de vêtement" aide="Ex. 20 : il faut 20 t-shirts et 20 casquettes. Vérifié dans le devis.">
               <input type="number" min="1" className="field w-32" value={draft.MINIMUM_PIECES} onChange={(e) => up((d) => { d.MINIMUM_PIECES = Number(e.target.value) })} />
             </Champ>
             <div>
