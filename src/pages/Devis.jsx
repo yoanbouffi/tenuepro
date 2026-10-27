@@ -80,6 +80,7 @@ export default function Devis() {
   const [sending, setSending] = useState(false)
   const [sendMsg, setSendMsg] = useState('')
   const [sendError, setSendError] = useState(false)
+  const [mailto, setMailto] = useState('')
   const [done, setDone] = useState(false)
   const topRef = useRef(null)
   const logoPreview = useMemo(() => (form.logo?.type?.startsWith('image/') ? URL.createObjectURL(form.logo) : null), [form.logo])
@@ -186,7 +187,7 @@ export default function Devis() {
     if (form.logo) {
       setSendMsg('Envoi du logo…')
       try {
-        const up = await uploadLogoToCloudinary(form.logo)
+        const up = await Promise.race([uploadLogoToCloudinary(form.logo), new Promise((_, rej) => setTimeout(() => rej(new Error('délai dépassé')), 30000))])
         if (up) {
           logoUrl = up.url; logoPublicId = up.public_id
           mockupUrls = buildAllMockupUrls(logoPublicId, form.produits)
@@ -226,7 +227,16 @@ export default function Devis() {
     })
     setSending(false); setSendMsg('')
     if (result.success) { setDone(true); window.scrollTo({ top: 0 }) }
-    else setSendError(true)
+    else {
+      const corps = [
+        'Bonjour,', '', 'Voici ma demande de devis (le formulaire du site n\'a pas pu l\'envoyer) :', '',
+        `${form.prenom} ${form.nom} — ${form.entreprise}`, `Tél. : ${form.telephone} · E-mail : ${form.email}`, form.siret ? `SIRET : ${form.siret}` : '',
+        `Secteur : ${form.secteur}`, `Pièces : ${form.produits.map((id) => `${pieceLabel(id)} × ${form.quantities[id]}`).join(', ')}`, '', description, '',
+        form.delai ? `Délai souhaité : ${form.delai}` : '', form.logo ? '(Je joins mon logo à ce mail.)' : '',
+      ].filter((l) => l !== null).join('\n')
+      setMailto(`mailto:${CONTACT.email}?subject=${encodeURIComponent('Demande de devis — ' + (form.entreprise || form.nom))}&body=${encodeURIComponent(corps.slice(0, 1800))}`)
+      setSendError(true)
+    }
   }
 
   if (done) {
@@ -501,7 +511,9 @@ export default function Devis() {
                 <p className="text-xs text-ink-muted">Vos informations servent uniquement à établir votre devis et à vous recontacter.</p>
                 {sendError && (
                   <p className="rounded-lg bg-[#FEF3F2] px-4 py-3 text-sm text-[#B42318]" role="alert">
-                    L’envoi n’a pas abouti. Réessayez, ou contactez-nous au {CONTACT.tel} ou à {CONTACT.email}.
+                    L’envoi n’a pas abouti. Réessayez, ou envoyez-nous votre demande par e-mail en un clic : elle est déjà rédigée.
+                    {mailto && <a href={mailto} className="btn-primary mt-3 flex w-full sm:w-auto">Envoyer ma demande par e-mail</a>}
+                    <span className="mt-2 block">Ou appelez-nous au <a className="underline" href={CONTACT.telHref}>{CONTACT.tel}</a>.</span>
                   </p>
                 )}
               </div>

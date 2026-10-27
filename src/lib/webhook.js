@@ -75,8 +75,8 @@ export const submitDevisForm = async (formData) => {
   const ENV_URL = import.meta.env.VITE_N8N_WEBHOOK_URL || ''
   // v2 : demandes enregistrées dans n8n (table « TenuePro demandes de devis ») + alerte Telegram, sans Supabase
   const N8N_WEBHOOK_URL = 'https://n8n.landiz.re/webhook/tenuepro-devis-v2'; void ENV_URL;
-  try {
-    const response = await fetch(N8N_WEBHOOK_URL, {
+  const envoi = () => fetch(N8N_WEBHOOK_URL, {
+      signal: AbortSignal.timeout ? AbortSignal.timeout(20000) : undefined,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -100,6 +100,10 @@ export const submitDevisForm = async (formData) => {
         mockup_urls:    formData.mockup_urls    || [],
       })
     });
+  try {
+    // une nouvelle tentative automatique en cas de coupure réseau
+    let response
+    try { response = await envoi() } catch (e) { await new Promise((r) => setTimeout(r, 1500)); response = await envoi() }
     if (!response.ok) throw new Error('Erreur webhook');
     const data = await response.json().catch(() => ({}));
     if (data && data.success === false) throw new Error('Erreur webhook');
