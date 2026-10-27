@@ -59,7 +59,7 @@ export default function Navbar() {
               </div>
             </div>
           ) : (
-            <Link to="/login" className="text-sm font-medium text-ink-muted hover:text-indigo">Espace client</Link>
+            null
           )}
           <Link to="/devis" className="btn-primary px-4 py-2 text-sm">Demander un devis</Link>
         </div>
@@ -88,7 +88,7 @@ export default function Navbar() {
                 <button onClick={() => signOut()} className="py-3 text-left font-medium text-ink-muted">Déconnexion</button>
               </>
             ) : (
-              <Link to="/login" className="py-3 font-medium text-ink-muted">Espace client</Link>
+              null
             )}
             <Link to="/devis" className="btn-primary mt-2 mb-2">Demander un devis</Link>
           </nav>

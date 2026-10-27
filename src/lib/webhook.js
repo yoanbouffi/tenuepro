@@ -73,7 +73,8 @@ export const notifyStatusChange = async (data) => {
 export const submitDevisForm = async (formData) => {
   // L'ancienne adresse du serveur n8n (srv1087606.hstgr.cloud) ne répond plus : n8n est sur n8n.landiz.re
   const ENV_URL = import.meta.env.VITE_N8N_WEBHOOK_URL || ''
-  const N8N_WEBHOOK_URL = ENV_URL && !ENV_URL.includes('srv1087606') ? ENV_URL : 'https://n8n.landiz.re/webhook/tenuepro-devis';
+  // v2 : demandes enregistrées dans n8n (table « TenuePro demandes de devis ») + alerte Telegram, sans Supabase
+  const N8N_WEBHOOK_URL = 'https://n8n.landiz.re/webhook/tenuepro-devis-v2'; void ENV_URL;
   try {
     const response = await fetch(N8N_WEBHOOK_URL, {
       method: 'POST',
@@ -100,6 +101,8 @@ export const submitDevisForm = async (formData) => {
       })
     });
     if (!response.ok) throw new Error('Erreur webhook');
+    const data = await response.json().catch(() => ({}));
+    if (data && data.success === false) throw new Error('Erreur webhook');
     return { success: true };
   } catch (error) {
     return { success: false, error: error.message };

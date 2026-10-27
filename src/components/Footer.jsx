@@ -30,7 +30,6 @@ export default function Footer() {
           <ul className="mt-4 space-y-2.5 text-sm">
             <li><a href={CONTACT.telHref} className="hover:text-white">{CONTACT.tel}</a></li>
             <li><a href={`mailto:${CONTACT.email}`} className="hover:text-white">{CONTACT.email}</a></li>
-            <li><Link to="/login" className="hover:text-white">Espace client</Link></li>
           </ul>
         </div>
       </div>
