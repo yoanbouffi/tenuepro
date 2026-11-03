@@ -169,6 +169,7 @@ export const PACKS = [
 export const OPTIONS_PACKS = [
   { label: 'Prénom brodé', prix: '+ 7 € HT / pièce' },
   { label: 'Numérisation du logo pour la broderie', prix: 'forfait unique dès 25 € HT, offerte dès 50 pièces' },
+  { label: 'Livraison partout à La Réunion', prix: '15 € HT par commande, offerte dès 250 pièces' },
 ]
 
 export const METIERS = [
@@ -259,7 +260,7 @@ export const ETAPES = [
   { titre: 'Conseil et maquette', texte: 'Nous vous proposons la technique adaptée, un devis détaillé et une maquette de votre logo.' },
   { titre: 'Validation', texte: 'Vous validez la maquette et le devis. Un acompte lance la production.' },
   { titre: 'Fabrication et contrôle', texte: 'Vos pièces sont fabriquées par nos ateliers partenaires, puis contrôlées une à une par TenuePro.' },
-  { titre: 'Livraison', texte: 'Livraison ou remise en main propre partout à La Réunion.' },
+  { titre: 'Livraison', texte: 'Livraison partout à La Réunion : offerte dès 250 pièces, 15 € HT en dessous.' },
 ]
 
 export const euro = (n) =>

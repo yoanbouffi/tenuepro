@@ -9,6 +9,7 @@ const faq = (MINIMUM_PIECES) => [
   ['Quels sont les délais ?', 'Comptez au minimum un mois entre la validation du devis et la livraison. Le délai exact dépend de la quantité, de la technique et des textiles, et il est confirmé sur votre devis. Une date impérative ? Indiquez-la dans votre demande.'],
   ['Mon logo doit-il être dans un format particulier ?', 'Un fichier vectoriel (AI, PDF, SVG) est idéal, mais un PNG ou un JPG de bonne qualité suffit pour démarrer. Nous préparons le fichier de broderie ou d’impression et vous montrons la maquette avant toute production.'],
   ['Pouvons-nous commencer par un seul service ?', 'Oui. Beaucoup de structures commencent par une équipe pilote. Votre logo est conservé : les commandes suivantes gardent exactement le même rendu.'],
+  ['La livraison est-elle comprise ?', 'Nous livrons partout à La Réunion, à l’adresse de votre choix. La livraison est offerte à partir de 250 pièces ; en dessous, elle est facturée 15 € HT par commande.'],
   ['Travaillez-vous avec les collectivités ?', 'Oui. Nous établissons des devis détaillés pour les services publics, avec facturation via Chorus Pro.'],
 ]
 
@@ -119,7 +120,7 @@ export default function Home() {
             [`Dès ${MINIMUM_PIECES} pièces`, 'par vêtement, tailles mélangées'],
             ['Prix dégressifs', `jusqu’à ${PALIERS.at(-1)} pièces et plus`],
             ['Maquette avant production', 'rien n’est fabriqué sans votre accord'],
-            ['Livraison offerte', 'partout à La Réunion'],
+            ['Livraison offerte dès 250 pièces', 'partout à La Réunion, 15 € HT en dessous'],
           ].map(([t, d]) => (
             <li key={t} className="flex gap-3">
               <svg className="mt-0.5 h-5 w-5 shrink-0 text-signal" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m4.5 10.5 3.5 3.5 7.5-8" strokeLinecap="round" strokeLinejoin="round" /></svg>

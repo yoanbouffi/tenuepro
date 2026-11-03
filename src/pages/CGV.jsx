@@ -37,9 +37,9 @@ Toute commande implique l'acceptation pleine et entière des présentes CGV, qui
   },
   {
     title: '5. Délais de production et de livraison',
-    content: `5.1. Les délais de production standard sont de 10 à 15 jours ouvrés à compter de la validation de la maquette et du règlement de l'acompte.
+    content: `5.1. Le délai de livraison est d'au minimum un mois à compter de la validation de la maquette et du règlement de l'acompte. Le délai exact figure sur le devis.
 
-5.2. La livraison s'effectue à l'adresse indiquée par le Client sur toute l'île de La Réunion. Les frais de port sont inclus dans les packs TenuePro, sauf mention contraire dans le devis.
+5.2. La livraison s'effectue à l'adresse indiquée par le Client sur toute l'île de La Réunion. Elle est offerte pour toute commande d'au moins 250 pièces ; en dessous, elle est facturée 15 € HT par commande, sauf mention contraire sur le devis.
 
 5.3. Les délais sont donnés à titre indicatif. Tout retard ne peut donner lieu à des pénalités ni à l'annulation de la commande, sauf accord contractuel écrit préalable.`,
   },
