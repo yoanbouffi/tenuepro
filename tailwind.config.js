@@ -6,8 +6,9 @@ export default {
       colors: {
         indigo: { DEFAULT: '#241675', deep: '#160D4F', soft: '#E2DEF5', mist: '#F4F2FA' },
         gold: { DEFAULT: '#E8A33D', deep: '#96600A', soft: '#FBEBD3' },
-        ink: { DEFAULT: '#2A2740', muted: '#5E5A78', line: '#DCD8EA' },
-        paper: '#FAF8F4',
+        ink: { DEFAULT: '#1B1838', muted: '#5B5873', line: '#E2E3EC' },
+        paper: '#F3F4F8',
+        signal: { DEFAULT: '#FF6A3D', deep: '#D94A1F' },
         // anciennes couleurs, conservées pour l'admin
         brand: { red: '#E63946', black: '#1a1a1a', gray: '#f5f5f5' },
       },

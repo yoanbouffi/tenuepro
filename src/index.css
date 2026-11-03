@@ -8,34 +8,35 @@
     font-family: 'Inter', system-ui, sans-serif;
     @apply text-ink bg-white antialiased;
   }
-  h1, h2, h3 { font-family: 'Archivo', 'Inter', system-ui, sans-serif; }
-  :focus-visible { outline: 2px solid #E8A33D; outline-offset: 2px; }
+  h1, h2, h3 { font-family: 'Archivo', 'Inter', system-ui, sans-serif; font-stretch: 112%; }
+  .font-display { font-stretch: 112%; }
+  :focus-visible { outline: 2px solid #FF6A3D; outline-offset: 2px; }
 }
 
 @layer components {
   .wrap { @apply max-w-site mx-auto px-4 sm:px-6 lg:px-8; }
-  .eyebrow { @apply text-xs font-semibold uppercase tracking-[0.14em] text-gold-deep; }
-  .h-section { @apply font-display font-extrabold text-indigo text-3xl md:text-[2.6rem] leading-[1.05] tracking-tight; }
+  .eyebrow { @apply text-sm font-semibold text-signal-deep; }
+  .h-section { @apply font-display font-extrabold text-ink text-3xl md:text-[2.75rem] leading-[1.02] tracking-[-0.02em]; }
   .lead { @apply text-base md:text-lg text-ink-muted leading-relaxed; }
 
   /* Le « fil » : pointillé doré, motif de la marque */
-  .stitch { border-left: 2px dashed #E8A33D; }
-  .stitch-top { border-top: 2px dashed #E8A33D; }
-  .stitch-frame { @apply absolute inset-2 rounded-md pointer-events-none; border: 1.5px dashed rgba(232,163,61,.75); }
+  .stitch { border-left: 2px solid #E2E3EC; }
+  .stitch-top { border-top: 1px solid #E2E3EC; }
+  .stitch-frame { display: none; }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-indigo px-6 py-3 font-semibold text-white transition-colors hover:bg-indigo-deep active:translate-y-px disabled:opacity-60;
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-indigo px-6 py-3 font-semibold text-white transition-colors hover:bg-indigo-deep active:translate-y-px disabled:opacity-60;
   }
   .btn-gold {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-gold px-6 py-3 font-semibold text-indigo-deep transition-colors hover:bg-[#F0B455] active:translate-y-px;
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-3 font-semibold text-indigo transition-colors hover:bg-indigo-soft active:translate-y-px;
   }
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg border-2 border-white px-6 py-3 font-semibold text-white transition-colors hover:bg-white hover:text-indigo;
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-white/50 px-6 py-3 font-semibold text-white transition-colors hover:bg-white hover:text-indigo;
   }
   .btn-outline {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg border-2 border-indigo px-6 py-3 font-semibold text-indigo transition-colors hover:bg-indigo hover:text-white;
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-ink/20 px-6 py-3 font-semibold text-ink transition-colors hover:border-indigo hover:text-indigo;
   }
-  .btn-link { @apply inline-flex items-center gap-1.5 font-semibold text-indigo underline decoration-gold decoration-2 underline-offset-4 hover:text-indigo-deep; }
+  .btn-link { @apply inline-flex items-center gap-1.5 font-semibold text-indigo underline decoration-signal decoration-2 underline-offset-4 hover:text-indigo-deep; }
 
   .field { @apply block w-full rounded-lg border border-ink-line bg-white px-3.5 py-2.5 text-ink placeholder:text-ink-muted/60 transition-colors focus:border-indigo focus:outline-none focus:ring-2 focus:ring-indigo/15; }
   .label { @apply mb-1.5 block text-sm font-medium text-ink; }

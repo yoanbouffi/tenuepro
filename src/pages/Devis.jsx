@@ -104,10 +104,14 @@ export default function Devis() {
         quantities: { ...pack.devis.quantities },
         marquages: marquagesDuPack(pack.devis),
       } : {}),
+      ...(!pack && mounted && PIECES.some((pc) => pc.id === params.get('piece')) ? {
+        produits: [params.get('piece')],
+        quantities: { [params.get('piece')]: String(parseInt(params.get('qte'), 10) || '') },
+      } : {}),
       secteur: params.get('secteur') || f.secteur,
       email: f.email || user?.email || '',
     }))
-  }, [pack?.id, user?.email]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [pack?.id, user?.email, mounted]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const set = (k, v) => {
     setForm((f) => ({ ...f, [k]: v }))
@@ -326,7 +330,7 @@ export default function Devis() {
                             </label>
                           ) : null}
                           {on && (parseInt(form.quantities[p.id], 10) || 0) < MINIMUM_PIECES && (
-                            <p className="mt-1.5 text-xs font-medium text-gold-deep">Minimum {MINIMUM_PIECES}</p>
+                            <p className="mt-1.5 text-xs font-medium text-signal-deep">Minimum {MINIMUM_PIECES}</p>
                           )}
                           {!on && <p className="text-xs leading-snug text-ink-muted">{p.usage}</p>}
                         </div>
@@ -355,7 +359,7 @@ export default function Devis() {
                           </div>
                           <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-start">
                             <div className="flex-1">
-                              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-gold-deep">Où&nbsp;?</p>
+                              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-signal-deep">Où&nbsp;?</p>
                               <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label={`Emplacements — ${pieceLabel(id)}`}>
                                 {emplacementsPour(id).map((e) => {
                                   const on = !!m[e]
@@ -371,8 +375,8 @@ export default function Devis() {
                             {HAUTS.includes(id) && <Schema selection={m} />}
                           </div>
                           {Object.keys(m).length > 0 && (
-                            <div className="mt-5 border-t border-dashed border-gold/70 pt-4">
-                              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-gold-deep">Comment&nbsp;?</p>
+                            <div className="mt-5 border-t border-ink-line pt-4">
+                              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-signal-deep">Comment&nbsp;?</p>
                               <ul className="mt-2 space-y-3">
                                 {Object.entries(m).map(([e, t]) => (
                                   <li key={e} className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
@@ -386,7 +390,7 @@ export default function Devis() {
                                         return (
                                           <button key={tk.id} type="button" role="radio" aria-checked={sel} onClick={() => setTech(id, e, tk.id)}
                                             className={`inline-flex items-center gap-1.5 rounded-lg border-2 px-3 py-1.5 text-sm font-semibold ${sel ? 'border-indigo bg-indigo text-white' : 'border-ink-line bg-white text-ink-muted hover:border-indigo/50 hover:text-indigo'}`}>
-                                            <span className={`flex h-3.5 w-3.5 items-center justify-center rounded-full border-2 ${sel ? 'border-gold bg-gold' : 'border-ink-line'}`} aria-hidden="true">
+                                            <span className={`flex h-3.5 w-3.5 items-center justify-center rounded-full border-2 ${sel ? 'border-signal bg-signal' : 'border-ink-line'}`} aria-hidden="true">
                                               {sel && <span className="h-1.5 w-1.5 rounded-full bg-indigo" />}
                                             </span>
                                             {tk.label}
@@ -417,7 +421,7 @@ export default function Devis() {
                 <fieldset>
                   <legend className="font-display text-xl font-bold text-indigo">Votre logo <span className="font-sans text-sm font-normal text-ink-muted">(facultatif)</span></legend>
                   <p className="mt-1 text-sm text-ink-muted">Joint maintenant, il nous permet de vous envoyer une maquette avec le devis. PNG, JPG, PDF, AI ou SVG.</p>
-                  <label className="mt-4 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gold/70 bg-paper px-6 py-8 text-center hover:bg-gold-soft/40">
+                  <label className="mt-4 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-ink-line bg-paper px-6 py-8 text-center hover:bg-gold-soft/40">
                     <input type="file" accept="image/*,.pdf,.ai,.eps,.svg" className="sr-only" onChange={(e) => set('logo', e.target.files?.[0] || null)} />
                     {form.logo ? (
                       <>
@@ -540,7 +544,7 @@ export default function Devis() {
 
           {/* Récapitulatif */}
           <aside className="h-fit rounded-2xl bg-indigo p-6 text-white lg:sticky lg:top-24">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-gold">Votre demande</p>
+            <p className="text-sm font-semibold text-white/70">Votre demande</p>
             <dl className="mt-4 space-y-4 text-sm">
               <div>
                 <dt className="text-indigo-soft">Pièces</dt>
@@ -550,7 +554,7 @@ export default function Devis() {
                   )) : '—'}
                 </dd>
               </div>
-              <div className="flex justify-between border-t border-dashed border-gold/50 pt-3">
+              <div className="flex justify-between border-t border-white/15 pt-3">
                 <dt className="text-indigo-soft">Total</dt>
                 <dd className="font-display text-lg font-bold">{total} pièce{total > 1 ? 's' : ''}</dd>
               </div>
