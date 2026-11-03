@@ -21,7 +21,13 @@ export const PIECES = [
   { id: 'tshirts',    label: 'T-shirts',         usage: 'Équipes, événements, clubs',      img: '/images/tshirt.webp' },
   { id: 'chemises',   label: 'Chemises',         usage: 'Hôtellerie, accueil, bureau',     img: '/images/chemise.webp' },
   { id: 'vestes',     label: 'Vestes & sweats',  usage: 'Extérieur, chantiers, saison fraîche', img: '/images/veste.webp' },
+  { id: 'vestescuisine', label: 'Vestes de cuisine', usage: 'Chefs, brigades, traiteurs',   img: '/images/veste-cuisine.webp' },
   { id: 'tabliers',   label: 'Tabliers',         usage: 'Cuisine, service, commerce',      img: '/images/tablier.webp' },
+  { id: 'blouses',    label: 'Blouses & tuniques', usage: 'Santé, beauté, aide à domicile', img: '/images/blouse.webp' },
+  { id: 'hautevis',   label: 'Haute visibilité', usage: 'Gilets et vestes pour chantiers et voirie', img: '/images/haute-visibilite.webp' },
+  { id: 'maillots',   label: 'Maillots de sport', usage: 'Clubs, tournois, écoles de sport', img: '/images/maillot.webp' },
+  { id: 'shorts',     label: 'Shorts de sport',  usage: 'Match et entraînement',           img: '/images/short.webp' },
+  { id: 'survetements', label: 'Survêtements',   usage: 'Déplacements, entraînement, encadrement', img: '/images/survetement.webp' },
   { id: 'casquettes', label: 'Casquettes',       usage: 'Visibilité et protection au soleil', img: '/images/casquette.webp' },
   { id: 'sacs',       label: 'Sacs & tote bags', usage: 'Salons, goodies, événements',     img: '/images/totebag.webp' },
 ]
@@ -67,6 +73,8 @@ export const EMPLACEMENTS = [
   { id: 'bas',      label: 'Bas du tablier', aide: 'sur la poche ou le bas' },
   { id: 'recto',    label: 'Recto', aide: 'face principale du sac' },
   { id: 'verso',    label: 'Verso', aide: 'face arrière du sac' },
+  { id: 'numero',   label: 'Numéro', aide: 'au dos du maillot ou sur le short' },
+  { id: 'jambe',    label: 'Jambe', aide: 'bas de la jambe, devant' },
 ]
 
 // Emplacements proposés selon la pièce
@@ -74,13 +82,21 @@ export const EMPLACEMENTS_PAR_PIECE = {
   casquettes: ['face', 'cote', 'arriere'],
   tabliers: ['poitrine', 'bas', 'prenom'],
   sacs: ['recto', 'verso'],
+  maillots: ['coeur', 'droite', 'dos', 'prenom', 'numero', 'manche'],
+  shorts: ['jambe', 'numero'],
+  survetements: ['coeur', 'dos', 'manche', 'nuque', 'prenom'],
+  vestescuisine: ['coeur', 'droite', 'manche', 'prenom'],
+  hautevis: ['coeur', 'dos'],
+  blouses: ['coeur', 'droite', 'dos', 'prenom'],
   default: ['coeur', 'droite', 'dos', 'nuque', 'manche', 'prenom'],
 }
 export const emplacementsPour = (pieceId) => EMPLACEMENTS_PAR_PIECE[pieceId] || EMPLACEMENTS_PAR_PIECE.default
 
 // Tailles proposées (null = taille unique)
 export const TAILLES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL']
-export const taillesPour = (pieceId) => (['casquettes', 'tabliers', 'sacs'].includes(pieceId) ? null : TAILLES)
+export const TAILLES_ENFANT = ['6 ans', '8 ans', '10 ans', '12 ans', '14 ans']
+const AVEC_ENFANT = ['tshirts', 'maillots', 'shorts', 'survetements']
+export const taillesPour = (pieceId) => (['casquettes', 'tabliers', 'sacs'].includes(pieceId) ? null : AVEC_ENFANT.includes(pieceId) ? [...TAILLES_ENFANT, ...TAILLES] : TAILLES)
 
 // Hypothèses de prix d'achat textile (HT, rendu La Réunion) utilisées pour les packs
 export const textileHT = { polo: 9, tshirt: 4.5, tablier: 8, casquette: 4 }
@@ -94,7 +110,7 @@ export const PACKS = [
     img: '/images/polo.webp',
     contenu: 'Polo',
     marquage: 'Logo brodé côté cœur',
-    prix: [24, 23.5],
+    prix: [24, 23, 22, 21],
     devis: { quantities: { polos: 20 }, marquages: { polos: { coeur: 'broderie' } } },
   },
   {
@@ -104,7 +120,7 @@ export const PACKS = [
     img: '/images/scene-btp.webp',
     contenu: 'T-shirt',
     marquage: 'Logo brodé côté cœur + logo imprimé au dos (A4)',
-    prix: [25, 24],
+    prix: [25, 24, 23, 21.5],
     devis: { quantities: { tshirts: 20 }, marquages: { tshirts: { coeur: 'broderie', dos: 'dtf' } } },
   },
   {
@@ -115,7 +131,7 @@ export const PACKS = [
     contenu: 'Polo + tablier',
     marquage: 'Logo brodé sur les deux pièces',
     unite: 'la tenue',
-    prix: [46, 45.5],
+    prix: [46, 44.5, 43, 41],
     devis: { quantities: { polos: 20, tabliers: 20 }, marquages: { polos: { coeur: 'broderie' }, tabliers: { poitrine: 'broderie' } } },
   },
   {
@@ -125,7 +141,7 @@ export const PACKS = [
     img: '/images/tshirt.webp',
     contenu: 'T-shirt',
     marquage: 'Visuel couleur côté cœur + grand visuel au dos (A3)',
-    prix: [20.5, 20],
+    prix: [20.5, 19.5, 18.5, 17.5],
     devis: { quantities: { tshirts: 20 }, marquages: { tshirts: { coeur: 'dtf', dos: 'dtf' } } },
   },
   {
@@ -133,10 +149,10 @@ export const PACKS = [
     nom: 'Club',
     pour: 'Clubs sportifs, écoles de sport, tournois',
     img: '/images/scene-club.webp',
-    contenu: 'Maillot ou t-shirt technique',
+    contenu: 'Maillot de sport',
     marquage: 'Écusson couleur + nom et numéro floqués au dos',
-    prix: [23, 22],
-    devis: { quantities: { tshirts: 20 }, marquages: { tshirts: { coeur: 'dtf', dos: 'flocage', prenom: 'flocage' } } },
+    prix: [23, 22, 21, 19.5],
+    devis: { quantities: { maillots: 20 }, marquages: { maillots: { coeur: 'dtf', prenom: 'flocage', numero: 'flocage' } } },
   },
   {
     id: 'casquettes',
@@ -145,7 +161,7 @@ export const PACKS = [
     img: '/images/casquette.webp',
     contenu: 'Casquette',
     marquage: 'Logo brodé en face avant',
-    prix: [16.5, 16],
+    prix: [16.5, 15.5, 14.5, 13.5],
     devis: { quantities: { casquettes: 20 }, marquages: { casquettes: { face: 'broderie' } } },
   },
 ]
@@ -218,7 +234,7 @@ export const METIERS = [
     img: '/images/scene-club.webp',
     label: 'Flocage · nom et numéro',
     texte: 'Maillots, tenues d’entraînement et de déplacement aux couleurs du club, avec noms et numéros.',
-    pieces: ['Maillots', 'T-shirts', 'Sweats'],
+    pieces: ['Maillots', 'Shorts', 'Survêtements'],
     pack: 'club',
     secteur: 'Sport & Loisirs',
   },
@@ -255,8 +271,8 @@ export const lc = (t) => t.charAt(0).toLowerCase() + t.slice(1)
 // de base ; ce qui est enregistré dans Supabase (table site_content) les remplace.
 export const DEFAULT_OFFRE = {
   MINIMUM_PIECES,
-  PALIERS: [20, 50],   // quantités à partir desquelles chaque prix s'applique
-  SEUIL_DEVIS: 100,    // au-delà : prix sur devis
+  PALIERS: [20, 50, 100, 250],   // quantités à partir desquelles chaque prix s'applique
+  SEUIL_DEVIS: 500,    // au-delà : prix sur devis
   CONTACT,
   PACKS,
   OPTIONS_PACKS,

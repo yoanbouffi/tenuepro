@@ -26,12 +26,12 @@ function marquagesDuPack(devis) {
   return Object.fromEntries(Object.keys(devis.quantities || {}).map((id) => [id, Object.fromEntries((devis.emplacements || []).map((e) => [e, tech]))]))
 }
 
-const HAUTS = ['polos', 'tshirts', 'chemises', 'vestes']
+const HAUTS = ['polos', 'tshirts', 'chemises', 'vestes', 'vestescuisine', 'blouses', 'hautevis', 'maillots', 'survetements']
 
 /** Petit schéma devant / dos qui montre où se trouve chaque emplacement */
 function Schema({ selection }) {
   const forme = 'M30 8 L42 4 Q50 12 58 4 L70 8 L92 22 L84 38 L74 32 L74 94 L26 94 L26 32 L16 38 L8 22 Z'
-  const points = { coeur: [62, 34, 0], droite: [38, 34, 0], manche: [84, 27, 0], nuque: [50, 15, 1], prenom: [50, 30, 1], dos: [50, 52, 1] }
+  const points = { coeur: [62, 34, 0], droite: [38, 34, 0], manche: [84, 27, 0], nuque: [50, 15, 1], prenom: [50, 30, 1], numero: [50, 44, 1], dos: [50, 58, 1] }
   return (
     <svg viewBox="0 0 220 112" className="h-28 w-auto shrink-0" role="img" aria-label="Schéma des emplacements, devant et dos">
       {[0, 1].map((cote) => (

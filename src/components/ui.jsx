@@ -53,8 +53,6 @@ export function SceneCard({ m, to }) {
 }
 
 export function PackCard({ p, dark = false }) {
-  const [min, prix] = p.paliers[p.paliers.length - 1]
-  const [min0, prix0] = p.paliers[0]
   return (
     <article className={`flex flex-col overflow-hidden rounded-xl border ${dark ? 'border-white/10 bg-white/5' : 'border-ink-line bg-white'}`}>
       <div className="relative aspect-[16/10] overflow-hidden bg-indigo-mist">
@@ -65,11 +63,18 @@ export function PackCard({ p, dark = false }) {
         <h3 className={`mt-2 font-display text-lg font-bold leading-snug ${dark ? 'text-white' : 'text-indigo'}`}>{p.contenu} — {lc(p.marquage)}</h3>
         <p className={`mt-2 text-sm ${dark ? 'text-indigo-soft' : 'text-ink-muted'}`}>{p.pour}</p>
         <div className={`mt-5 pt-4 ${dark ? 'border-t border-dashed border-gold/60' : 'stitch-top'}`}>
-          <p className={`text-sm ${dark ? 'text-indigo-soft' : 'text-ink-muted'}`}>dès {min} pièces</p>
-          <p className={`font-display text-3xl font-extrabold ${dark ? 'text-white' : 'text-indigo'}`}>
-            {euro(prix)} <span className="font-sans text-sm font-medium opacity-70">HT / {p.unite || 'pièce'}</span>
-          </p>
-          <p className={`mt-1 text-xs ${dark ? 'text-indigo-soft/80' : 'text-ink-muted'}`}>{euro(prix0)} HT dès {min0} pièces</p>
+          <p className={`text-xs ${dark ? 'text-indigo-soft' : 'text-ink-muted'}`}>Prix HT / {p.unite || 'pièce'}, dégressif selon la quantité</p>
+          <dl className={`mt-2 grid gap-1.5`} style={{ gridTemplateColumns: `repeat(${p.paliers.length}, minmax(0, 1fr))` }}>
+            {p.paliers.map(([q, v], i) => {
+              const fort = i === p.paliers.length - 1
+              return (
+                <div key={q} className={`rounded-md px-1.5 py-2 text-center ${fort ? (dark ? 'bg-gold text-indigo-deep' : 'bg-indigo text-white') : (dark ? 'bg-white/10 text-white' : 'bg-indigo-mist text-indigo')}`}>
+                  <dt className={`text-[11px] font-medium ${fort ? 'opacity-90' : 'opacity-70'}`}>dès {q}</dt>
+                  <dd className="font-display text-[15px] font-extrabold tabular-nums">{euro(v)}</dd>
+                </div>
+              )
+            })}
+          </dl>
         </div>
         <Link to={`/devis?pack=${p.id}`} className={`mt-6 ${dark ? 'btn-gold' : 'btn-outline'} py-2.5 text-sm`}>Demander ce pack</Link>
       </div>

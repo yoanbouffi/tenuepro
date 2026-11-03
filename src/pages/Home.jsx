@@ -18,46 +18,41 @@ export default function Home() {
     <>
       {/* ── Ouverture ─────────────────────────────────────────────── */}
       <section className="bg-paper pt-16">
-        <div className="wrap grid items-center gap-12 py-14 md:py-20 lg:grid-cols-[1.05fr_1fr]">
+        <div className="wrap grid items-center gap-12 py-14 md:py-20 lg:grid-cols-[1fr_1.05fr]">
           <div>
-            <p className="eyebrow">Tenues professionnelles personnalisées · La Réunion</p>
-            <h1 className="mt-4 font-display text-[2.6rem] font-extrabold leading-[1.02] tracking-tight text-indigo sm:text-6xl">
-              Des tenues qui portent <span className="relative whitespace-nowrap">votre nom<svg className="absolute -bottom-2 left-0 h-3 w-full" viewBox="0 0 200 12" preserveAspectRatio="none" aria-hidden="true"><path d="M2 8 C 50 2, 150 2, 198 8" fill="none" stroke="#E8A33D" strokeWidth="3" strokeDasharray="8 6" strokeLinecap="round" /></svg></span>.
+            <p className="eyebrow">Fournisseur de tenues professionnelles · La Réunion</p>
+            <h1 className="mt-4 font-display text-[2.5rem] font-extrabold leading-[1.04] tracking-tight text-indigo sm:text-[3.4rem]">
+              Équipez vos équipes à vos couleurs.
             </h1>
             <p className="lead mt-6 max-w-xl">
-              Polos, t-shirts, tabliers, casquettes : nous prenons en charge les tenues de vos équipes, de la maquette à la livraison. Un seul interlocuteur à La Réunion, chaque pièce contrôlée avant de vous être remise.
+              Polos, vestes, maillots, tabliers : un seul interlocuteur à La Réunion pour les tenues de votre entreprise, de votre club ou de votre collectivité. Devis détaillé, maquette avant production, chaque pièce contrôlée et livrée.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link to="/devis" className="btn-primary">Demander un devis <Arrow /></Link>
               <Link to="/packs" className="btn-outline">Voir les packs et tarifs</Link>
             </div>
-            <dl className="mt-10 grid max-w-lg grid-cols-3 gap-4 text-sm">
+            <dl className="mt-10 grid max-w-xl grid-cols-3 gap-4 text-sm">
               {[
                 [`Dès ${MINIMUM_PIECES}`, 'pièces par vêtement'],
-                ['3', 'techniques de marquage'],
-                ['Maquette', 'avant production'],
+                ['Dégressif', 'prix en baisse avec la quantité'],
+                ['Livraison', 'offerte partout à La Réunion'],
               ].map(([k, v]) => (
-                <div key={k} className="stitch pl-3">
-                  <dt className="font-display text-xl font-extrabold text-indigo">{k}</dt>
+                <div key={k} className="border-l-2 border-indigo/20 pl-3">
+                  <dt className="font-display text-lg font-extrabold text-indigo">{k}</dt>
                   <dd className="text-ink-muted">{v}</dd>
                 </div>
               ))}
             </dl>
           </div>
 
-          <div className="relative mx-auto w-full max-w-[520px]">
-            <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-[#d6d5d3] sm:aspect-[5/4]">
+          <figure className="relative mx-auto w-full max-w-[600px]">
+            <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-indigo shadow-[0_24px_60px_-30px_rgba(36,22,117,.45)]">
               <img src="/images/hero-equipe.webp" alt="Équipe en polos marine brodés au logo de l’entreprise, devant une case créole à La Réunion" className="h-full w-full object-cover object-[50%_40%]" fetchpriority="high" />
-              <span className="stitch-frame !inset-3" aria-hidden="true" />
             </div>
-            <div className="absolute -bottom-8 -left-4 w-[52%] overflow-hidden rounded-xl border-4 border-paper shadow-xl sm:-left-10">
-              <img src="/images/broderie-macro.webp" alt="Gros plan d’un logo brodé fil blanc et or sur un polo marine" className="aspect-[4/3] w-full object-cover" />
-            </div>
-            <div className="absolute -right-2 top-6 rounded-lg bg-white px-4 py-3 shadow-lg sm:-right-6">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-gold-deep">Broderie</p>
-              <p className="font-display text-sm font-bold text-indigo">Côté cœur · 10 cm</p>
-            </div>
-          </div>
+            <figcaption className="absolute bottom-4 left-4 right-4 flex items-center justify-between gap-3 rounded-xl bg-white/95 px-4 py-3 text-sm shadow-md sm:left-auto sm:right-4 sm:max-w-[330px]">
+              <span><span className="block text-[11px] font-semibold uppercase tracking-[0.12em] text-gold-deep">Exemple client</span><span className="font-semibold text-indigo">25 polos, logo brodé côté cœur</span></span>
+            </figcaption>
+          </figure>
         </div>
       </section>
 
