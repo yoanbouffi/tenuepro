@@ -119,9 +119,9 @@ export const PACKS = [
     pour: 'BTP, services techniques, équipes d’intervention',
     img: '/images/scene-btp.webp',
     contenu: 'T-shirt',
-    marquage: 'Logo brodé côté cœur + logo imprimé au dos (A4)',
+    marquage: 'Logo brodé côté cœur',
     prix: [19.9, 18.9, 17.9, 16.9],
-    devis: { quantities: { tshirts: 20 }, marquages: { tshirts: { coeur: 'broderie', dos: 'dtf' } } },
+    devis: { quantities: { tshirts: 20 }, marquages: { tshirts: { coeur: 'broderie' } } },
   },
   {
     id: 'restauration',
