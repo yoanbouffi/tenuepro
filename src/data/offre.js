@@ -110,7 +110,7 @@ export const PACKS = [
     img: '/images/polo.webp',
     contenu: 'Polo',
     marquage: 'Logo brodé côté cœur',
-    prix: [19.9, 18.9, 17.9, 16.9],
+    prix: [24.9, 22.9, 20.9, 18.9],
     devis: { quantities: { polos: 20 }, marquages: { polos: { coeur: 'broderie' } } },
   },
   {
@@ -120,7 +120,7 @@ export const PACKS = [
     img: '/images/scene-btp.webp',
     contenu: 'T-shirt',
     marquage: 'Logo brodé côté cœur',
-    prix: [19.9, 18.9, 17.9, 16.9],
+    prix: [21.9, 19.9, 18.9, 17.9],
     devis: { quantities: { tshirts: 20 }, marquages: { tshirts: { coeur: 'broderie' } } },
   },
   {
@@ -131,7 +131,7 @@ export const PACKS = [
     contenu: 'Polo + tablier',
     marquage: 'Logo brodé sur les deux pièces',
     unite: 'la tenue',
-    prix: [37.9, 35.9, 33.9, 31.9],
+    prix: [44.9, 42.9, 39.9, 37.9],
     devis: { quantities: { polos: 20, tabliers: 20 }, marquages: { polos: { coeur: 'broderie' }, tabliers: { poitrine: 'broderie' } } },
   },
   {
@@ -141,7 +141,7 @@ export const PACKS = [
     img: '/images/tshirt.webp',
     contenu: 'T-shirt',
     marquage: 'Visuel couleur côté cœur + grand visuel au dos (A3)',
-    prix: [16.9, 15.9, 14.9, 13.9],
+    prix: [19.9, 18.9, 16.9, 15.9],
     devis: { quantities: { tshirts: 20 }, marquages: { tshirts: { coeur: 'dtf', dos: 'dtf' } } },
   },
   {
@@ -151,7 +151,7 @@ export const PACKS = [
     img: '/images/scene-club.webp',
     contenu: 'Maillot de sport',
     marquage: 'Écusson couleur + nom et numéro floqués au dos',
-    prix: [21.9, 20.9, 19.9, 18.9],
+    prix: [24.9, 23.9, 22.9, 21.9],
     devis: { quantities: { maillots: 20 }, marquages: { maillots: { coeur: 'dtf', prenom: 'flocage', numero: 'flocage' } } },
   },
   {
@@ -161,7 +161,7 @@ export const PACKS = [
     img: '/images/casquette.webp',
     contenu: 'Casquette',
     marquage: 'Logo brodé en face avant',
-    prix: [13.9, 12.9, 11.9, 10.9],
+    prix: [15.9, 14.9, 13.9, 12.9],
     devis: { quantities: { casquettes: 20 }, marquages: { casquettes: { face: 'broderie' } } },
   },
 ]
