@@ -47,7 +47,7 @@ export default function Home() {
 
           <div className="relative mx-auto w-full max-w-[520px]">
             <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-[#d6d5d3] sm:aspect-[5/4]">
-              <img src="/images/atelier.webp" alt="Polo, t-shirt, tablier et casquette marqués d’un logo, pliés sur fond clair" className="h-full w-full object-cover object-[45%_50%]" fetchpriority="high" />
+              <img src="/images/hero-equipe.webp" alt="Équipe en polos marine brodés au logo de l’entreprise, devant une case créole à La Réunion" className="h-full w-full object-cover object-[50%_40%]" fetchpriority="high" />
               <span className="stitch-frame !inset-3" aria-hidden="true" />
             </div>
             <div className="absolute -bottom-8 -left-4 w-[52%] overflow-hidden rounded-xl border-4 border-paper shadow-xl sm:-left-10">

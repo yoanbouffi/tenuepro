@@ -161,9 +161,9 @@ export const METIERS = [
     bande: 40, // hauteur du bandeau-titre en haut de la photo (%)
     nom: 'Restauration & bars',
     img: '/images/scene-restauration.webp',
-    label: 'Broderie · tablier et polo',
+    label: 'Broderie · veste de cuisine',
     texte: 'Des tenues qui tiennent au lavage quotidien et qui rendent votre équipe reconnaissable en salle comme au comptoir.',
-    pieces: ['Polos', 'Tabliers', 'Casquettes'],
+    pieces: ['Vestes de cuisine', 'Tabliers', 'Polos'],
     pack: 'restauration',
     secteur: 'Restauration',
   },
@@ -172,7 +172,7 @@ export const METIERS = [
     bande: 38, // hauteur du bandeau-titre en haut de la photo (%)
     nom: 'Hôtellerie & tourisme',
     img: '/images/scene-hotellerie.webp',
-    label: 'Broderie · côté cœur',
+    label: 'Broderie dorée · côté cœur',
     texte: 'Chemises et polos brodés discrets pour l’accueil, la réception et les équipes au contact des clients.',
     pieces: ['Chemises', 'Polos', 'Vestes'],
     pack: 'accueil',
@@ -194,9 +194,9 @@ export const METIERS = [
     bande: 30, // hauteur du bandeau-titre en haut de la photo (%)
     nom: 'BTP & artisans',
     img: '/images/scene-btp.webp',
-    label: 'Broderie cœur · DTF dos',
+    label: 'Logo imprimé au dos',
     texte: 'Votre logo bien visible sur les chantiers : brodé à l’avant, imprimé en grand au dos.',
-    pieces: ['T-shirts', 'Vestes & sweats', 'Casquettes'],
+    pieces: ['Vestes haute visibilité', 'T-shirts', 'Casquettes'],
     pack: 'terrain',
     secteur: 'Bâtiment & Artisanat',
   },
