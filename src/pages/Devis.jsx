@@ -163,7 +163,7 @@ export default function Devis() {
       else if (form.produits.some((id) => !(parseInt(form.quantities[id], 10) > 0))) e.produits = 'Indiquez une quantité pour chaque pièce choisie.'
       else {
         const bas = form.produits.filter((id) => parseInt(form.quantities[id], 10) < MINIMUM_PIECES)
-        if (bas.length) e.produits = `Il faut au moins ${MINIMUM_PIECES} pièces par vêtement. À compléter : ${bas.map((id) => `${pieceLabel(id)} (${form.quantities[id]})`).join(', ')}.`
+        if (bas.length) e.produits = `Il faut au moins ${MINIMUM_PIECES} pièces par modèle et par couleur. À compléter : ${bas.map((id) => `${pieceLabel(id)} (${form.quantities[id]})`).join(', ')}.`
       }
     }
     if (s === 1) {
@@ -305,7 +305,7 @@ export default function Devis() {
             {step === 0 && (
               <fieldset>
                 <legend className="font-display text-xl font-bold text-indigo">Quelles pièces, et combien ?</legend>
-                <p className="mt-1 text-sm text-ink-muted">{MINIMUM_PIECES} pièces minimum par vêtement, par exemple {MINIMUM_PIECES} t-shirts et {MINIMUM_PIECES} casquettes. Vous pourrez mélanger les tailles à l’étape 3.</p>
+                <p className="mt-1 text-sm text-ink-muted">{MINIMUM_PIECES} pièces minimum par modèle et par couleur, par exemple {MINIMUM_PIECES} polos marine. Vous pourrez mélanger les tailles à l’étape 3, et préciser plusieurs couleurs dans vos remarques.</p>
                 <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
                   {PIECES.map((p) => {
                     const on = form.produits.includes(p.id)

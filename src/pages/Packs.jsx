@@ -6,7 +6,7 @@ import { SectionHead, PackCard, Faq, CtaBand, Arrow } from '../components/ui'
 const faq = ({ MINIMUM_PIECES, PALIERS, SEUIL_DEVIS }) => [
   ['Les prix comprennent-ils le textile ?', 'Oui. Le prix par pièce comprend la pièce textile et le marquage décrit. La TVA (8,5 % à La Réunion) s’ajoute au prix hors taxes.'],
   ['Puis-je changer de pièce ou de couleur ?', 'Oui. Les packs sont un point de départ : modèle, coloris, tailles et emplacements s’ajustent dans votre demande. Le devis tient compte de vos choix.'],
-  [`Pourquoi ${MINIMUM_PIECES} pièces minimum par vêtement ?`, `Chaque série demande un réglage machine et la préparation de votre logo. À partir de ${MINIMUM_PIECES} pièces par vêtement, nous pouvons vous proposer un prix juste et un rendu identique sur toute la série. Les tailles peuvent être mélangées.`],
+  [`Pourquoi ${MINIMUM_PIECES} pièces minimum par modèle et par couleur ?`, `Chaque série demande un réglage machine et la préparation de votre logo. À partir de ${MINIMUM_PIECES} pièces par modèle et par couleur, nous pouvons vous proposer un prix juste et un rendu identique sur toute la série. Les tailles peuvent être mélangées.`],
   [`Et à partir de ${SEUIL_DEVIS} pièces ?`, 'Nous établissons un prix sur devis, plus bas que la grille, car les grandes séries se fabriquent à meilleur coût. Le contrôle et la livraison restent assurés par TenuePro.'],
 ]
 
@@ -74,7 +74,7 @@ export default function Packs() {
               </li>
             ))}
           </ul>
-          <p className="mt-6 text-xs text-ink-muted">Prix indicatifs pour des pièces standard et un logo jusqu’à trois couleurs. Le prix définitif figure sur votre devis.</p>
+          <p className="mt-6 text-xs text-ink-muted">Prix indicatifs pour des pièces standard et un logo d’une couleur ; logo multicolore sur devis. Le prix définitif figure sur votre devis.</p>
         </div>
       </section>
 
@@ -83,7 +83,7 @@ export default function Packs() {
         <div className="wrap grid items-center gap-10 py-20 md:grid-cols-2">
           <div>
             <SectionHead eyebrow="Sur mesure" title="Aucun pack ne correspond ?">
-              {`Composez votre commande librement, dès ${MINIMUM_PIECES} pièces par vêtement : chemises, vestes, sweats, sacs, plusieurs emplacements, plusieurs techniques.`}
+              {`Composez votre commande librement, dès ${MINIMUM_PIECES} pièces par modèle et par couleur : chemises, vestes, sweats, sacs, plusieurs emplacements, plusieurs techniques.`}
             </SectionHead>
             <Link to="/devis" className="btn-primary mt-8">Composer ma demande <Arrow /></Link>
           </div>

@@ -13,7 +13,7 @@ export const CONTACT = {
 }
 
 // Minimum par type de vêtement (ex. 20 t-shirts ET 20 casquettes)
-export const MINIMUM_PIECES = 20
+export const MINIMUM_PIECES = 50
 
 // Identifiants = ceux attendus par n8n et les maquettes Cloudinary (src/lib/mockups.js)
 export const PIECES = [
@@ -110,8 +110,8 @@ export const PACKS = [
     img: '/images/polo.webp',
     contenu: 'Polo',
     marquage: 'Logo brodé côté cœur',
-    prix: [24.9, 22.9, 20.9, 18.9],
-    devis: { quantities: { polos: 20 }, marquages: { polos: { coeur: 'broderie' } } },
+    prix: [22.9, 20.9, 18.9, 17.9],
+    devis: { quantities: { polos: 50 }, marquages: { polos: { coeur: 'broderie' } } },
   },
   {
     id: 'terrain',
@@ -120,8 +120,8 @@ export const PACKS = [
     img: '/images/scene-btp.webp',
     contenu: 'T-shirt',
     marquage: 'Logo brodé côté cœur',
-    prix: [21.9, 19.9, 18.9, 17.9],
-    devis: { quantities: { tshirts: 20 }, marquages: { tshirts: { coeur: 'broderie' } } },
+    prix: [16.9, 15.9, 13.9, 12.9],
+    devis: { quantities: { tshirts: 50 }, marquages: { tshirts: { coeur: 'broderie' } } },
   },
   {
     id: 'restauration',
@@ -131,8 +131,8 @@ export const PACKS = [
     contenu: 'Polo + tablier',
     marquage: 'Logo brodé sur les deux pièces',
     unite: 'la tenue',
-    prix: [44.9, 42.9, 39.9, 37.9],
-    devis: { quantities: { polos: 20, tabliers: 20 }, marquages: { polos: { coeur: 'broderie' }, tabliers: { poitrine: 'broderie' } } },
+    prix: [38.9, 36.9, 32.9, 30.9],
+    devis: { quantities: { polos: 50, tabliers: 50 }, marquages: { polos: { coeur: 'broderie' }, tabliers: { poitrine: 'broderie' } } },
   },
   {
     id: 'evenement',
@@ -141,8 +141,8 @@ export const PACKS = [
     img: '/images/tshirt.webp',
     contenu: 'T-shirt',
     marquage: 'Visuel couleur côté cœur + grand visuel au dos (A3)',
-    prix: [19.9, 18.9, 16.9, 15.9],
-    devis: { quantities: { tshirts: 20 }, marquages: { tshirts: { coeur: 'dtf', dos: 'dtf' } } },
+    prix: [17.9, 15.9, 13.9, 12.9],
+    devis: { quantities: { tshirts: 50 }, marquages: { tshirts: { coeur: 'dtf', dos: 'dtf' } } },
   },
   {
     id: 'club',
@@ -151,8 +151,8 @@ export const PACKS = [
     img: '/images/scene-club.webp',
     contenu: 'Maillot de sport',
     marquage: 'Écusson couleur + nom et numéro floqués au dos',
-    prix: [24.9, 23.9, 22.9, 21.9],
-    devis: { quantities: { maillots: 20 }, marquages: { maillots: { coeur: 'dtf', prenom: 'flocage', numero: 'flocage' } } },
+    prix: [24.9, 22.9, 20.9, 18.9],
+    devis: { quantities: { maillots: 50 }, marquages: { maillots: { coeur: 'dtf', prenom: 'flocage', numero: 'flocage' } } },
   },
   {
     id: 'casquettes',
@@ -161,14 +161,14 @@ export const PACKS = [
     img: '/images/casquette.webp',
     contenu: 'Casquette',
     marquage: 'Logo brodé en face avant',
-    prix: [15.9, 14.9, 13.9, 12.9],
-    devis: { quantities: { casquettes: 20 }, marquages: { casquettes: { face: 'broderie' } } },
+    prix: [13.9, 12.9, 10.9, 9.9],
+    devis: { quantities: { casquettes: 50 }, marquages: { casquettes: { face: 'broderie' } } },
   },
 ]
 
 export const OPTIONS_PACKS = [
   { label: 'Prénom brodé', prix: '+ 7 € HT / pièce' },
-  { label: 'Numérisation du logo pour la broderie', prix: 'forfait unique dès 25 € HT, offerte dès 50 pièces' },
+  { label: 'Numérisation du logo pour la broderie', prix: 'offerte' },
   { label: 'Livraison partout à La Réunion', prix: '15 € HT par commande, offerte dès 250 pièces' },
 ]
 
@@ -272,8 +272,8 @@ export const lc = (t) => t.charAt(0).toLowerCase() + t.slice(1)
 // de base ; ce qui est enregistré dans Supabase (table site_content) les remplace.
 export const DEFAULT_OFFRE = {
   MINIMUM_PIECES,
-  PALIERS: [20, 50, 100, 250],   // quantités à partir desquelles chaque prix s'applique
-  SEUIL_DEVIS: 500,    // au-delà : prix sur devis
+  PALIERS: [50, 100, 250, 500],   // quantités à partir desquelles chaque prix s'applique
+  SEUIL_DEVIS: 1000,    // au-delà : prix sur devis
   CONTACT,
   PACKS,
   OPTIONS_PACKS,
