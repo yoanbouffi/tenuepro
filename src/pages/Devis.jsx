@@ -444,7 +444,7 @@ export default function Devis() {
               <div className="space-y-8">
                 <fieldset>
                   <legend className="font-display text-xl font-bold text-indigo">Répartition des tailles</legend>
-                  <p className="mt-1 text-sm text-ink-muted">Répartissez librement vos pièces entre les tailles, par exemple 1&nbsp;S et 49&nbsp;XL&nbsp;: seul le total compte. Pas encore décidé&nbsp;? Laissez à zéro, nous la demanderons avant la production.</p>
+                  <p className="mt-1 text-sm text-ink-muted">Indiquez combien de pièces par taille. Pas encore décidé&nbsp;? Laissez à zéro, nous la demanderons avant la production.</p>
                   <div className="mt-5 space-y-4">
                     {form.produits.map((id) => {
                       const tailles = taillesPour(id)
