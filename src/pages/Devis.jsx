@@ -444,7 +444,7 @@ export default function Devis() {
               <div className="space-y-8">
                 <fieldset>
                   <legend className="font-display text-xl font-bold text-indigo">Répartition des tailles</legend>
-                  <p className="mt-1 text-sm text-ink-muted">Indiquez combien de pièces par taille. Pas encore décidé&nbsp;? Laissez à zéro, nous la demanderons avant la production.</p>
+                  <p className="mt-1 text-sm text-ink-muted">Répartissez librement vos pièces entre les tailles, par exemple 1&nbsp;S et 49&nbsp;XL&nbsp;: seul le total compte. Pas encore décidé&nbsp;? Laissez à zéro, nous la demanderons avant la production.</p>
                   <div className="mt-5 space-y-4">
                     {form.produits.map((id) => {
                       const tailles = taillesPour(id)
@@ -456,7 +456,7 @@ export default function Devis() {
                             <p className="font-display text-lg font-bold text-indigo">{pieceLabel(id)}</p>
                             {tailles ? (
                               <p className={`text-sm font-semibold tabular-nums ${somme === 0 ? 'text-ink-muted' : somme === qte ? 'text-[#067647]' : 'text-[#B42318]'}`}>
-                                {somme === 0 ? `À préciser plus tard · ${qte} pièces` : `${somme} / ${qte} réparties`}
+                                {somme === 0 ? `À préciser plus tard · ${qte} pièces` : somme === qte ? `${somme} / ${qte} réparties` : somme < qte ? `${somme} / ${qte} · encore ${qte - somme} à répartir` : `${somme} / ${qte} · ${somme - qte} en trop`}
                               </p>
                             ) : <p className="text-sm text-ink-muted">Taille unique · {qte} pièces</p>}
                           </div>
@@ -534,7 +534,7 @@ export default function Devis() {
               </div>
             )}
 
-            <div className="mt-10 flex items-center justify-between gap-4 border-t border-ink-line pt-6">
+            <div className="sticky bottom-0 z-20 -mx-6 -mb-6 mt-10 flex items-center justify-between gap-4 rounded-b-2xl border-t border-ink-line bg-white/95 px-6 pt-4 backdrop-blur md:-mx-8 md:-mb-8 md:px-8" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
               {step > 0 ? <button type="button" onClick={back} className="font-semibold text-ink-muted hover:text-indigo">Retour</button> : <span />}
               <button type="submit" className="btn-primary" disabled={sending}>
                 {sending ? sendMsg || 'Envoi…' : step < 3 ? <>Continuer <Arrow /></> : 'Envoyer ma demande'}
