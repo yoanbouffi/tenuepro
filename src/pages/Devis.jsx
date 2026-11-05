@@ -456,7 +456,7 @@ export default function Devis() {
                             <p className="font-display text-lg font-bold text-indigo">{pieceLabel(id)}</p>
                             {tailles ? (
                               <p className={`text-sm font-semibold tabular-nums ${somme === 0 ? 'text-ink-muted' : somme === qte ? 'text-[#067647]' : 'text-[#B42318]'}`}>
-                                {somme === 0 ? `À préciser plus tard · ${qte} pièces` : somme === qte ? `${somme} / ${qte} réparties` : somme < qte ? `${somme} / ${qte} · encore ${qte - somme} à répartir` : `${somme} / ${qte} · ${somme - qte} en trop`}
+                                {somme === 0 ? `À préciser plus tard · ${qte} pièces` : `${somme} / ${qte} réparties`}
                               </p>
                             ) : <p className="text-sm text-ink-muted">Taille unique · {qte} pièces</p>}
                           </div>
