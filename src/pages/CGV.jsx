@@ -37,7 +37,7 @@ Toute commande implique l'acceptation pleine et entière des présentes CGV, qui
   },
   {
     title: '5. Délais de production et de livraison',
-    content: `5.1. Le délai de livraison est d'au minimum un mois à compter de la validation de la maquette et du règlement de l'acompte. Le délai exact figure sur le devis.
+    content: `5.1. Le délai de livraison est de 4 à 6 semaines à compter de la validation de la maquette et du règlement de l'acompte. Le délai exact figure sur le devis.
 
 5.2. La livraison s'effectue à l'adresse indiquée par le Client sur toute l'île de La Réunion. Elle est offerte pour toute commande d'au moins 250 pièces ; en dessous, elle est facturée 15 € HT par commande, sauf mention contraire sur le devis.
 

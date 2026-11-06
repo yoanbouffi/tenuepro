@@ -6,7 +6,7 @@ import { Faq, Arrow } from '../components/ui'
 
 const faq = (MINIMUM_PIECES) => [
   ['Quelle quantité minimum ?', `${MINIMUM_PIECES} pièces minimum par modèle et par couleur : par exemple ${MINIMUM_PIECES} polos marine, ou ${MINIMUM_PIECES} noirs et ${MINIMUM_PIECES} blancs. Les tailles peuvent être mélangées, et les prix baissent avec la quantité.`],
-  ['Quels sont les délais ?', 'Comptez au minimum un mois entre la validation du devis et la livraison. Le délai exact dépend de la quantité, de la technique et des textiles, et il est confirmé sur votre devis. Une date impérative ? Indiquez-la dans votre demande.'],
+  ['Quels sont les délais ?', 'Comptez 4 à 6 semaines entre la validation du devis et la livraison. Le délai exact dépend de la quantité, de la technique et des textiles, et il est confirmé sur votre devis. Une date impérative ? Indiquez-la dans votre demande.'],
   ['Mon logo doit-il être dans un format particulier ?', 'Un fichier vectoriel (AI, PDF, SVG) est idéal, mais un PNG ou un JPG de bonne qualité suffit pour démarrer. Nous préparons le fichier de broderie ou d’impression et vous montrons la maquette avant toute production.'],
   ['Pouvons-nous commencer par un seul service ?', 'Oui. Beaucoup de structures commencent par une équipe pilote. Votre logo est conservé : les commandes suivantes gardent exactement le même rendu.'],
   ['La livraison est-elle comprise ?', 'Nous livrons partout à La Réunion, à l’adresse de votre choix. La livraison est offerte à partir de 250 pièces ; en dessous, elle est facturée 15 € HT par commande.'],
