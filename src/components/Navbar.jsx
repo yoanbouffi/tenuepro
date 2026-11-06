@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
-import { useAuth } from '../hooks/useAuth'
 
 const LINKS = [
   { to: '/solutions', label: 'Solutions par métier' },
@@ -13,7 +12,6 @@ export default function Navbar() {
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const location = useLocation()
-  const { user, signOut } = useAuth()
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8)
@@ -48,19 +46,6 @@ export default function Navbar() {
         </nav>
 
         <div className="hidden items-center gap-4 lg:flex">
-          {user ? (
-            <div className="group relative">
-              <button className="text-sm font-medium text-ink-muted hover:text-indigo">Mon espace</button>
-              <div className="invisible absolute right-0 top-full w-52 pt-2 opacity-0 transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
-                <div className="rounded-lg border border-ink-line bg-white p-1.5 shadow-lg">
-                  <Link to="/espace-client" className="block rounded-md px-3 py-2 text-sm hover:bg-indigo-mist">Suivi de mes commandes</Link>
-                  <button onClick={() => signOut()} className="block w-full rounded-md px-3 py-2 text-left text-sm text-ink-muted hover:bg-indigo-mist">Déconnexion</button>
-                </div>
-              </div>
-            </div>
-          ) : (
-            null
-          )}
           <Link to="/devis" className="btn-primary px-4 py-2 text-sm">Demander un devis</Link>
         </div>
 
@@ -82,14 +67,6 @@ export default function Navbar() {
             {LINKS.map((l) => (
               <Link key={l.to} to={l.to} className="py-3 font-medium text-ink">{l.label}</Link>
             ))}
-            {user ? (
-              <>
-                <Link to="/espace-client" className="py-3 font-medium text-ink">Suivi de mes commandes</Link>
-                <button onClick={() => signOut()} className="py-3 text-left font-medium text-ink-muted">Déconnexion</button>
-              </>
-            ) : (
-              null
-            )}
             <Link to="/devis" className="btn-primary mt-2 mb-2">Demander un devis</Link>
           </nav>
         </div>

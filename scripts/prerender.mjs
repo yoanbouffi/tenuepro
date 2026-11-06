@@ -23,6 +23,7 @@ function loadEnv() {
 }
 
 async function contenuEnregistre() {
+  return null // contenu fixé dans src/data/offre.js (plus de Supabase)
   const env = loadEnv()
   const url = env.VITE_SUPABASE_URL, key = env.VITE_SUPABASE_ANON_KEY
   if (!url || !key) return null

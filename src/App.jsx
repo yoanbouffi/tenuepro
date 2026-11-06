@@ -7,11 +7,6 @@ import Packs from './pages/Packs'
 import Solutions from './pages/Solutions'
 import Devis from './pages/Devis'
 import CGV from './pages/CGV'
-import Login from './pages/Login'
-import EspaceClient from './pages/EspaceClient'
-import Admin from './pages/Admin'
-import ResetPassword from './pages/ResetPassword'
-import ForgotPassword from './pages/ForgotPassword'
 import { OffreProvider } from './content/OffreContext'
 import { SITE_URL, seoFor } from './seo'
 
@@ -56,11 +51,7 @@ export function AppRoutes() {
           <Route path="/realisations"  element={<Navigate to="/solutions" replace />} />
           <Route path="/devis"         element={<Devis />} />
           <Route path="/cgv"           element={<CGV />} />
-          <Route path="/login"                  element={<Login />} />
-          <Route path="/espace-client"         element={<EspaceClient />} />
-          <Route path="/admin-tenuepro-2026"   element={<Admin />} />
-          <Route path="/reset-password"        element={<ResetPassword />} />
-          <Route path="/forgot-password"       element={<ForgotPassword />} />
+          <Route path="*"              element={<Navigate to="/" replace />} />
         </Routes>
       </main>
       <Footer />

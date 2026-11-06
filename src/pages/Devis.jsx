@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { useAuth } from '../hooks/useAuth'
 import { submitDevisForm, uploadLogoToCloudinary } from '../lib/webhook'
 import { buildAllMockupUrls } from '../lib/mockups'
 import { PIECES, EMPLACEMENTS, SECTEURS, DELAIS, DELAI_MINIMUM, euro, emplacementsPour, taillesPour } from '../data/offre'
@@ -72,7 +71,6 @@ export default function Devis() {
   const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])
   const pack = (mounted && PACKS.find((p) => p.id === params.get('pack'))) || null
-  const { user } = useAuth()
 
   const [form, setForm] = useState(initial)
   const [step, setStep] = useState(0)
@@ -109,9 +107,9 @@ export default function Devis() {
         quantities: { [params.get('piece')]: String(parseInt(params.get('qte'), 10) || '') },
       } : {}),
       secteur: params.get('secteur') || f.secteur,
-      email: f.email || user?.email || '',
+      email: f.email || '',
     }))
-  }, [pack?.id, user?.email, mounted]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [pack?.id, mounted]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const set = (k, v) => {
     setForm((f) => ({ ...f, [k]: v }))

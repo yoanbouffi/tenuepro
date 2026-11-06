@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { DEFAULT_OFFRE } from '../data/offre'
-import { supabase } from '../lib/supabase'
 
 const OffreContext = createContext(DEFAULT_OFFRE)
 
@@ -14,12 +13,6 @@ export function mergeOffre(remote) {
   }
 }
 
-export async function fetchOffre() {
-  const { data, error } = await supabase.from('site_content').select('data').eq('key', 'offre').maybeSingle()
-  if (error) throw error
-  return data?.data || null
-}
-
 /**
  * `initial` : contenu figé au moment de la génération du site (pré-rendu),
  * puis remplacé par la dernière version enregistrée dès le chargement.
@@ -27,11 +20,9 @@ export async function fetchOffre() {
 export function OffreProvider({ initial, children }) {
   const [offre, setOffre] = useState(() => mergeOffre(initial))
   useEffect(() => {
-    let alive = true
-    fetchOffre().then((d) => { if (alive && d) setOffre(mergeOffre(d)) }).catch(() => {})
     const onSaved = (e) => setOffre(mergeOffre(e.detail))
     window.addEventListener('offre:saved', onSaved)
-    return () => { alive = false; window.removeEventListener('offre:saved', onSaved) }
+    return () => window.removeEventListener('offre:saved', onSaved)
   }, [])
   const visible = {
     ...offre,
