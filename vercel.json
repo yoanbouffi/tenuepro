@@ -3,7 +3,17 @@
   "outputDirectory": "dist",
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/realisations", "destination": "/solutions" },
-    { "source": "/(.*)", "destination": "/app" }
+    {
+      "source": "/c/:id",
+      "destination": "https://n8n.landiz.re/webhook/tenuepro-clic?c=:id"
+    },
+    {
+      "source": "/realisations",
+      "destination": "/solutions"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/app"
+    }
   ]
 }
