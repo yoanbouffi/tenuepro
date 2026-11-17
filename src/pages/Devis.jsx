@@ -64,6 +64,47 @@ const initial = {
   prenom: '', nom: '', entreprise: '', siret: '', email: '', telephone: '',
 }
 
+
+/** Raccourci : demande de rappel en 2 champs, pour les visiteurs pressés. */
+function RappelRapide({ refProspect, source }) {
+  const [f, setF] = useState({ nom: '', telephone: '', personnes: '' })
+  const [etat, setEtat] = useState('') // '' | 'envoi' | 'ok' | 'erreur'
+  const valide = f.telephone.replace(/\D/g, '').length >= 9
+  const envoyer = async (e) => {
+    e.preventDefault()
+    if (!valide) { setEtat('invalide'); return }
+    setEtat('envoi')
+    try {
+      const r = await fetch('https://n8n.landiz.re/webhook/tenuepro-rappel', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...f, ref: refProspect || '', source: source || '' }),
+      })
+      setEtat(r.ok ? 'ok' : 'erreur')
+    } catch { setEtat('erreur') }
+  }
+  if (etat === 'ok') {
+    return (
+      <div className="mt-6 rounded-2xl bg-indigo-mist px-5 py-4 text-indigo">
+        <strong>Merci, c’est noté.</strong> Nous vous rappelons au {f.telephone} pour vous faire une proposition.
+      </div>
+    )
+  }
+  return (
+    <form onSubmit={envoyer} noValidate className="mt-6 rounded-2xl border border-ink-line bg-white p-5 md:p-6">
+      <p className="font-display text-lg font-extrabold text-indigo">Pas le temps de tout remplir ?</p>
+      <p className="mt-1 text-sm text-ink-muted">Laissez votre numéro, on vous rappelle pour vous faire une proposition.</p>
+      <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_1fr_160px_auto]">
+        <input className="field" placeholder="Nom ou entreprise" value={f.nom} onChange={(e) => setF({ ...f, nom: e.target.value })} aria-label="Nom ou entreprise" autoComplete="organization" />
+        <input className="field" type="tel" inputMode="tel" placeholder="Téléphone *" value={f.telephone} onChange={(e) => { setF({ ...f, telephone: e.target.value }); if (etat) setEtat('') }} aria-label="Téléphone" autoComplete="tel" required />
+        <input className="field" inputMode="numeric" placeholder="Nb de personnes" value={f.personnes} onChange={(e) => setF({ ...f, personnes: e.target.value })} aria-label="Nombre de personnes à équiper" />
+        <button type="submit" className="btn-primary whitespace-nowrap" disabled={etat === 'envoi'}>{etat === 'envoi' ? 'Envoi…' : 'Être rappelé'}</button>
+      </div>
+      {etat === 'invalide' && <p className="mt-2 text-sm font-medium text-[#B42318]" role="alert">Indiquez un numéro de téléphone valide.</p>}
+      {etat === 'erreur' && <p className="mt-2 text-sm font-medium text-[#B42318]" role="alert">L’envoi n’a pas fonctionné. Appelez-nous ou écrivez à contact@tenuepro.re.</p>}
+    </form>
+  )
+}
+
 export default function Devis() {
   const { PACKS, MINIMUM_PIECES, CONTACT } = useOffre()
   const [params] = useSearchParams()
@@ -277,6 +318,9 @@ export default function Devis() {
         <p className="eyebrow">Demande de devis</p>
         <h1 className="mt-3 font-display text-3xl font-extrabold tracking-tight text-indigo sm:text-4xl">Décrivez votre projet.</h1>
         <p className="mt-2 text-ink-muted">Quatre étapes, deux minutes, sans création de compte.</p>
+
+        <RappelRapide refProspect={params.get('ref')} source={params.get('utm_source')} />
+        <p className="mt-6 text-sm font-semibold text-ink-muted">Ou décrivez votre projet en détail :</p>
 
         {/* Progression */}
         <ol className="mt-8 grid grid-cols-4 gap-2" aria-label="Étapes">
