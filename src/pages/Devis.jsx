@@ -454,7 +454,7 @@ export default function Devis() {
                     <summary className="cursor-pointer font-semibold text-indigo">Quelle technique choisir&nbsp;?</summary>
                     <ul className="mt-2 space-y-1 pl-1">
                       <li><strong className="text-ink">Broderie</strong> : logo côté cœur, casquettes, prénoms. Le plus haut de gamme.</li>
-                      <li><strong className="text-ink">Flocage</strong> : textes, noms et numéros d’une seule couleur.</li>
+                      <li><strong className="text-ink">Flocage</strong> : textes, noms et numéros en aplats de couleur.</li>
                       <li><strong className="text-ink">DTF</strong> : visuels en couleurs et grands formats au dos.</li>
                     </ul>
                   </details>
@@ -614,7 +614,7 @@ export default function Devis() {
                 <div className="rounded-lg bg-white/10 p-3">
                   <dt className="text-indigo-soft">Prix indicatif, pack {pack.nom}</dt>
                   <dd className="mt-1 font-display text-lg font-bold">
-                    {euro((pack.paliers.filter(([q]) => qtePack >= q).pop() || pack.paliers[0])[1])} HT / {pack.unite || 'pièce'}
+                    {euro((pack.paliers.filter(([q]) => qtePack >= q).pop() || pack.paliers[0])[1])} / {pack.unite || 'pièce'}
                   </dd>
                 </div>
               )}

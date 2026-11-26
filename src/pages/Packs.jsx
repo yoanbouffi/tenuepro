@@ -4,9 +4,11 @@ import { useOffre } from '../content/OffreContext'
 import { SectionHead, PackCard, Faq, CtaBand, Arrow } from '../components/ui'
 
 const faq = ({ MINIMUM_PIECES, PALIERS, SEUIL_DEVIS }) => [
-  ['Les prix comprennent-ils le textile ?', 'Oui. Le prix par pièce comprend la pièce textile et le marquage décrit. La TVA (8,5 % à La Réunion) s’ajoute au prix hors taxes.'],
+  ['Les prix comprennent-ils le textile ?', 'Oui. Le prix par pièce comprend la pièce textile et le marquage décrit dans le pack (un emplacement, logo jusqu’à 10 cm). Ce sont des prix nets : TVA non applicable, art. 293 B du CGI.'],
   ['Puis-je changer de pièce ou de couleur ?', 'Oui. Les packs sont un point de départ : modèle, coloris, tailles et emplacements s’ajustent dans votre demande. Le devis tient compte de vos choix.'],
   [`Pourquoi ${MINIMUM_PIECES} pièces minimum par modèle et par couleur ?`, `Chaque série demande un réglage machine et la préparation de votre logo. À partir de ${MINIMUM_PIECES} pièces par modèle et par couleur, nous pouvons vous proposer un prix juste et un rendu identique sur toute la série. Les tailles peuvent être mélangées.`],
+  ['Comment s’appliquent les prix dégressifs ?', 'Par modèle et par coloris : 100 polos marine sont au palier 100, quelles que soient les tailles. Chaque pack indique sa technique de marquage ; une autre technique ou un logo plus grand se chiffre sur devis.'],
+  ['Puis-je recommander plus tard ?', `Oui. Votre logo est conservé : vos réassorts gardent exactement le même rendu, dès ${MINIMUM_PIECES} pièces par modèle et par coloris.`],
   [`Et à partir de ${SEUIL_DEVIS} pièces ?`, 'Nous établissons un prix sur devis, plus bas que la grille, car les grandes séries se fabriquent à meilleur coût. Le contrôle et la livraison restent assurés par TenuePro.'],
 ]
 
@@ -24,7 +26,7 @@ export default function Packs() {
             Équiper une équipe, à prix connu d’avance.
           </h1>
           <p className="lead mt-5 max-w-2xl">
-            Six formules pensées pour les professionnels. Prix par pièce hors taxes, textile et marquage compris, dégressifs selon la quantité.
+            Six formules pensées pour les professionnels. Prix nets par pièce, textile et marquage compris, dégressifs selon la quantité.
           </p>
         </div>
       </section>
@@ -40,7 +42,7 @@ export default function Packs() {
       {/* Grille récapitulative */}
       <section className="bg-white">
         <div className="wrap pb-20">
-          <SectionHead eyebrow="Récapitulatif" title="Prix par pièce, hors taxes." />
+          <SectionHead eyebrow="Récapitulatif" title="Prix nets par pièce." />
           <div className="mt-8 overflow-x-auto rounded-xl border border-ink-line">
             <table className="w-full min-w-[640px] text-left text-sm">
               <caption className="sr-only">Prix des packs par pièce selon la quantité</caption>
@@ -74,7 +76,7 @@ export default function Packs() {
               </li>
             ))}
           </ul>
-          <p className="mt-6 text-xs text-ink-muted">Prix indicatifs pour des pièces standard et un logo d’une couleur ; logo multicolore sur devis. Le prix définitif figure sur votre devis.</p>
+          <p className="mt-6 text-xs text-ink-muted">Prix nets indicatifs par pièce, par modèle et par coloris, avec la technique indiquée dans chaque pack (un emplacement, logo jusqu’à 10 cm). Grands formats, logos complexes, autre technique ou emplacements supplémentaires : sur devis. TVA non applicable, art. 293 B du CGI. Le prix définitif figure sur votre devis.</p>
         </div>
       </section>
 

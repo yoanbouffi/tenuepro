@@ -63,7 +63,7 @@ export function PackCard({ p, dark = false }) {
         <h3 className={`mt-2 font-display text-lg font-bold leading-snug ${dark ? 'text-white' : 'text-ink'}`}>{p.contenu} — {lc(p.marquage)}</h3>
         <p className={`mt-2 text-sm ${dark ? 'text-indigo-soft' : 'text-ink-muted'}`}>{p.pour}</p>
         <div className={`mt-5 pt-4 ${dark ? 'border-t border-white/15' : 'stitch-top'}`}>
-          <p className={`text-xs ${dark ? 'text-indigo-soft' : 'text-ink-muted'}`}>Prix HT / {p.unite || 'pièce'}, dégressif selon la quantité</p>
+          <p className={`text-xs ${dark ? 'text-indigo-soft' : 'text-ink-muted'}`}>Prix net / {p.unite || 'pièce'}, dégressif selon la quantité</p>
           <dl className={`mt-2 grid gap-1.5`} style={{ gridTemplateColumns: `repeat(${p.paliers.length}, minmax(0, 1fr))` }}>
             {p.paliers.map(([q, v], i) => {
               const fort = i === p.paliers.length - 1

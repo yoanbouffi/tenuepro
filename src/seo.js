@@ -8,7 +8,7 @@ export const SEO = {
   },
   '/packs': {
     title: 'Packs et tarifs — Tenues personnalisées pour professionnels | TenuePro',
-    description: 'Prix HT par pièce, textile et marquage compris : polos brodés, t-shirts, tenues de restauration, clubs, casquettes. Tarifs dégressifs dès 20 pièces à La Réunion.',
+    description: 'Prix nets par pièce, textile et marquage compris : polos brodés, t-shirts, tenues de restauration, clubs, casquettes. Tarifs dégressifs dès 50 pièces à La Réunion.',
   },
   '/solutions': {
     title: 'Tenues de travail par métier : restauration, hôtellerie, BTP, clubs | TenuePro',

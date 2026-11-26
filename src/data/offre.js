@@ -38,15 +38,15 @@ export const TECHNIQUES = [
     label: 'Broderie',
     img: '/images/broderie.webp',
     accroche: 'Le logo cousu, en relief.',
-    texte: 'Le rendu le plus haut de gamme pour un logo côté cœur, une casquette ou un prénom. Tient au lavage industriel.',
+    texte: 'Le rendu le plus haut de gamme pour un logo côté cœur, une casquette ou un prénom. Excellente tenue, lavage après lavage.',
     ideal: ['Logo côté cœur', 'Casquettes', 'Prénoms'],
   },
   {
     id: 'flocage',
     label: 'Flocage',
     img: '/images/flocage.webp',
-    accroche: 'Net, monocouleur, efficace.',
-    texte: 'Découpé dans un film textile puis pressé à chaud. Idéal pour les textes, noms et numéros d’une seule couleur.',
+    accroche: 'Net, mat, efficace.',
+    texte: 'Découpé dans un film textile puis pressé à chaud. Idéal pour les textes, noms et numéros en aplats de couleur.',
     ideal: ['Noms et numéros', 'Textes au dos', 'Logos une couleur'],
   },
   {
@@ -101,7 +101,7 @@ export const taillesPour = (pieceId) => (['casquettes', 'tabliers', 'sacs'].incl
 // Hypothèses de prix d'achat textile (HT, rendu La Réunion) utilisées pour les packs
 export const textileHT = { polo: 9, tshirt: 4.5, tablier: 8, casquette: 4 }
 
-// Prix par pièce, HT : un prix par palier de quantité (voir PALIERS).
+// Prix nets par pièce (TVA non applicable, art. 293 B du CGI) : un prix par palier de quantité (voir PALIERS).
 export const PACKS = [
   {
     id: 'accueil',
@@ -128,7 +128,7 @@ export const PACKS = [
     nom: 'Salle & cuisine',
     pour: 'Restaurants, bars, snacks, traiteurs',
     img: '/images/tablier.webp',
-    contenu: 'Polo + tablier',
+    contenu: '1 polo + 1 tablier',
     marquage: 'Logo brodé sur les deux pièces',
     unite: 'la tenue',
     prix: [38.9, 36.9, 32.9, 30.9],
@@ -140,7 +140,7 @@ export const PACKS = [
     pour: 'Associations, salons, séminaires, collectivités',
     img: '/images/tshirt.webp',
     contenu: 'T-shirt',
-    marquage: 'Visuel couleur côté cœur + grand visuel au dos (A3)',
+    marquage: 'Impression DTF côté cœur + grand dos (A3 max)',
     prix: [17.9, 15.9, 13.9, 12.9],
     devis: { quantities: { tshirts: 50 }, marquages: { tshirts: { coeur: 'dtf', dos: 'dtf' } } },
   },
@@ -161,15 +161,16 @@ export const PACKS = [
     img: '/images/casquette.webp',
     contenu: 'Casquette',
     marquage: 'Logo brodé en face avant',
-    prix: [13.9, 12.9, 10.9, 9.9],
+    prix: [15.9, 14.9, 13.9, 12.9],
     devis: { quantities: { casquettes: 50 }, marquages: { casquettes: { face: 'broderie' } } },
   },
 ]
 
 export const OPTIONS_PACKS = [
-  { label: 'Prénom brodé', prix: '+ 7 € HT / pièce' },
-  { label: 'Numérisation du logo pour la broderie', prix: 'offerte' },
-  { label: 'Livraison partout à La Réunion', prix: '15 € HT par commande, offerte dès 250 pièces' },
+  { label: 'Prénom brodé', prix: '+ 7 € / pièce' },
+  { label: 'Numérisation du logo pour la broderie', prix: 'offerte pour toute commande confirmée' },
+  { label: 'Option express', prix: 'frais supplémentaires indiqués sur le devis' },
+  { label: 'Livraison partout à La Réunion', prix: '15 € par commande, offerte dès 250 pièces par commande' },
 ]
 
 export const METIERS = [
@@ -259,9 +260,9 @@ export const DELAI_MINIMUM = 'Comptez 8 à 10 semaines entre la validation du de
 export const ETAPES = [
   { titre: 'Votre demande en ligne', texte: 'Pièces, quantités, emplacements et logo : deux minutes suffisent.' },
   { titre: 'Conseil et maquette', texte: 'Nous vous proposons la technique adaptée, un devis détaillé et une maquette de votre logo.' },
-  { titre: 'Validation', texte: 'Vous validez la maquette et le devis. Un acompte lance la production.' },
+  { titre: 'Validation', texte: 'Vous validez le devis et la maquette (BAT). L’acompte de 40 % lance la production.' },
   { titre: 'Fabrication et contrôle', texte: 'Vos pièces sont fabriquées par nos ateliers partenaires, puis contrôlées une à une par TenuePro.' },
-  { titre: 'Livraison', texte: 'Livraison partout à La Réunion : offerte dès 250 pièces, 15 € HT en dessous.' },
+  { titre: 'Livraison', texte: 'Livraison partout à La Réunion : offerte dès 250 pièces par commande, 15 € en dessous.' },
 ]
 
 export const euro = (n) =>

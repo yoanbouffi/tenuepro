@@ -45,7 +45,7 @@ export default function Solutions() {
                   </div>
                   <div className="mt-6 rounded-2xl bg-paper p-5">
                     <p className="text-sm text-ink-muted">Pack conseillé : <span className="font-semibold text-indigo">{pack.nom}</span> — {lc(pack.contenu)}, {lc(pack.marquage)}</p>
-                    <p className="mt-1 font-display text-xl font-bold text-indigo">dès {euro(prix)} HT / {pack.unite || 'pièce'}</p>
+                    <p className="mt-1 font-display text-xl font-bold text-indigo">dès {euro(prix)} / {pack.unite || 'pièce'}</p>
                   </div>
                   <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                     <Link to={`/devis?pack=${pack.id}&secteur=${encodeURIComponent(m.secteur)}`} className="btn-primary">Demander un devis <Arrow /></Link>

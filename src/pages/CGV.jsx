@@ -13,7 +13,7 @@ Toute commande implique l'acceptation pleine et entière des présentes CGV, qui
 
 2.2. La commande devient ferme et définitive après :
 - Validation écrite du devis et de la maquette par le Client (par email ou bon pour accord signé),
-- Versement de l'acompte de 50 % du montant total TTC.
+- Versement de l'acompte de 40 % du montant total.
 
 2.3. TenuePro se réserve le droit de refuser toute commande incompatible avec ses capacités de production ou contraire aux lois en vigueur.`,
   },
@@ -21,17 +21,19 @@ Toute commande implique l'acceptation pleine et entière des présentes CGV, qui
     title: '3. Fourniture des éléments graphiques',
     content: `3.1. Le Client s'engage à fournir ses fichiers logo dans un format exploitable (vectoriel SVG, AI, EPS ou PDF haute résolution). Un fichier de mauvaise qualité peut entraîner un résultat dégradé dont TenuePro ne saurait être tenu responsable.
 
-3.2. Une maquette numérique de simulation est fournie gratuitement avant tout lancement en production. Elle doit être validée expressément par le Client.
+3.2. Une maquette numérique (bon à tirer, BAT) est fournie gratuitement avant tout lancement en production. Elle précise le logo, son emplacement et ses dimensions, et doit être validée expressément par le Client.
 
 3.3. Le Client garantit être titulaire ou disposer de tous les droits nécessaires sur les éléments graphiques transmis. TenuePro ne pourra être tenu responsable de toute violation de droits de tiers.`,
   },
   {
     title: '4. Prix et modalités de paiement',
-    content: `4.1. Les prix sont exprimés en euros TTC. Ils sont valables pour les quantités et produits définis dans le devis accepté.
+    content: `4.1. Les prix sont exprimés en euros nets, TVA non applicable (article 293 B du CGI). Ils sont valables pour les quantités et produits définis dans le devis accepté.
 
 4.2. Modalités de règlement :
-- Acompte de 50 % à la commande, par virement bancaire ou paiement en ligne sécurisé,
-- Solde de 50 % à la livraison ou avant expédition.
+- Acompte de 40 % à la commande, par virement bancaire ou paiement en ligne sécurisé,
+- Solde de 60 % à la livraison ou avant expédition.
+
+Pour les acheteurs publics, les modalités de paiement suivent les règles applicables à leur marché (facturation via Chorus Pro).
 
 4.3. Tout retard de paiement entraîne de plein droit l'application de pénalités de retard au taux légal en vigueur, ainsi qu'une indemnité forfaitaire de recouvrement de 40 € conformément à l'article L. 441-10 du Code de commerce.`,
   },
@@ -39,7 +41,7 @@ Toute commande implique l'acceptation pleine et entière des présentes CGV, qui
     title: '5. Délais de production et de livraison',
     content: `5.1. Le délai de livraison standard est de 8 à 10 semaines à compter de la validation de la maquette et du règlement de l'acompte. Une option express peut être proposée ; elle entraîne des frais supplémentaires, à la charge du Client et précisés sur le devis. Le délai exact figure sur le devis.
 
-5.2. La livraison s'effectue à l'adresse indiquée par le Client sur toute l'île de La Réunion. Elle est offerte pour toute commande d'au moins 250 pièces ; en dessous, elle est facturée 15 € HT par commande, sauf mention contraire sur le devis.
+5.2. La livraison s'effectue à l'adresse indiquée par le Client sur toute l'île de La Réunion. Elle est offerte pour toute commande d'au moins 250 pièces ; en dessous, elle est facturée 15 € par commande, sauf mention contraire sur le devis.
 
 5.3. Les délais sont donnés à titre indicatif. Tout retard ne peut donner lieu à des pénalités ni à l'annulation de la commande, sauf accord contractuel écrit préalable.`,
   },

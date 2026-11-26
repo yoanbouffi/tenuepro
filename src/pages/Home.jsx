@@ -9,8 +9,8 @@ const faq = (MINIMUM_PIECES) => [
   ['Quels sont les délais ?', 'Comptez 8 à 10 semaines entre la validation du devis et la livraison. Besoin plus vite ? Une option express (3 à 4 semaines) est possible, avec des frais supplémentaires indiqués sur votre devis. Le délai exact est confirmé sur le devis. Une date impérative ? Indiquez-la dans votre demande, et pour vos réassorts, anticipez votre commande de 2 à 3 mois.'],
   ['Mon logo doit-il être dans un format particulier ?', 'Un fichier vectoriel (AI, PDF, SVG) est idéal, mais un PNG ou un JPG de bonne qualité suffit pour démarrer. Nous préparons le fichier de broderie ou d’impression et vous montrons la maquette avant toute production.'],
   ['Pouvons-nous commencer par un seul service ?', 'Oui. Beaucoup de structures commencent par une équipe pilote. Votre logo est conservé : les commandes suivantes gardent exactement le même rendu.'],
-  ['La livraison est-elle comprise ?', 'Nous livrons partout à La Réunion, à l’adresse de votre choix. La livraison est offerte à partir de 250 pièces ; en dessous, elle est facturée 15 € HT par commande.'],
-  ['Travaillez-vous avec les collectivités ?', 'Oui. Nous établissons des devis détaillés pour les services publics, avec facturation via Chorus Pro.'],
+  ['La livraison est-elle comprise ?', 'Nous livrons partout à La Réunion, à l’adresse de votre choix. La livraison est offerte à partir de 250 pièces par commande ; en dessous, elle est facturée 15 €.'],
+  ['Travaillez-vous avec les collectivités ?', 'Oui. Nous établissons des devis détaillés pour les services publics, avec facturation via Chorus Pro. Les modalités de paiement (acompte ou non) suivent les règles de votre marché.'],
 ]
 
 /** Barre de devis rapide : pièce + quantité, puis le formulaire complet pré-rempli */
@@ -47,7 +47,7 @@ function Tarifs({ PACKS, PALIERS, SEUIL_DEVIS }) {
       <div className="wrap grid gap-12 py-20 md:py-28 lg:grid-cols-[0.9fr_1.4fr]">
         <div>
           <h2 className="h-section">Plus vous commandez, moins vous payez.</h2>
-          <p className="lead mt-5 max-w-md">Prix par pièce, hors taxes, textile et marquage compris. Choisissez une quantité pour voir le prix de chaque pack.</p>
+          <p className="lead mt-5 max-w-md">Prix nets par pièce, textile et marquage compris. Choisissez une quantité pour voir le prix de chaque pack.</p>
           <div role="radiogroup" aria-label="Quantité commandée" className="mt-8 inline-grid grid-cols-4 rounded-full bg-paper p-1">
             {PALIERS.map((q, j) => (
               <button key={q} type="button" role="radio" aria-checked={i === j} onClick={() => setI(j)}
@@ -72,7 +72,7 @@ function Tarifs({ PACKS, PALIERS, SEUIL_DEVIS }) {
                   </div>
                   <p className="text-right">
                     <span className="block font-display text-2xl font-extrabold tabular-nums text-indigo">{euro(prix)}</span>
-                    <span className="text-xs text-ink-muted">HT / {p.unite || 'pièce'}</span>
+                    <span className="text-xs text-ink-muted">/ {p.unite || 'pièce'}</span>
                   </p>
                 </Link>
               </li>
@@ -119,8 +119,8 @@ export default function Home() {
           {[
             [`Dès ${MINIMUM_PIECES} pièces`, 'par modèle et par couleur, tailles mélangées'],
             ['Prix dégressifs', `jusqu’à ${PALIERS.at(-1)} pièces et plus`],
-            ['Maquette avant production', 'rien n’est fabriqué sans votre accord'],
-            ['Livraison offerte dès 250 pièces', 'partout à La Réunion, 15 € HT en dessous'],
+            ['Maquette (BAT) avant production', 'rien n’est fabriqué sans votre accord écrit'],
+            ['Livraison offerte dès 250 pièces', 'par commande, partout à La Réunion'],
           ].map(([t, d]) => (
             <li key={t} className="flex gap-3">
               <svg className="mt-0.5 h-5 w-5 shrink-0 text-signal" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m4.5 10.5 3.5 3.5 7.5-8" strokeLinecap="round" strokeLinejoin="round" /></svg>
