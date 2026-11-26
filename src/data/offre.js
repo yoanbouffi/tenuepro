@@ -110,7 +110,7 @@ export const PACKS = [
     img: '/images/polo.webp',
     contenu: 'Polo',
     marquage: 'Logo brodé côté cœur',
-    prix: [22.9, 20.9, 18.9, 17.9],
+    prix: [23.9, 21.9, 19.9, 18.9],
     devis: { quantities: { polos: 50 }, marquages: { polos: { coeur: 'broderie' } } },
   },
   {
@@ -120,7 +120,7 @@ export const PACKS = [
     img: '/images/scene-btp.webp',
     contenu: 'T-shirt',
     marquage: 'Logo brodé côté cœur',
-    prix: [16.9, 15.9, 13.9, 12.9],
+    prix: [17.9, 16.9, 14.9, 13.9],
     devis: { quantities: { tshirts: 50 }, marquages: { tshirts: { coeur: 'broderie' } } },
   },
   {
@@ -131,7 +131,7 @@ export const PACKS = [
     contenu: '1 polo + 1 tablier',
     marquage: 'Logo brodé sur les deux pièces',
     unite: 'la tenue',
-    prix: [38.9, 36.9, 32.9, 30.9],
+    prix: [39.9, 37.9, 33.9, 31.9],
     devis: { quantities: { polos: 50, tabliers: 50 }, marquages: { polos: { coeur: 'broderie' }, tabliers: { poitrine: 'broderie' } } },
   },
   {
@@ -141,7 +141,7 @@ export const PACKS = [
     img: '/images/tshirt.webp',
     contenu: 'T-shirt',
     marquage: 'Impression DTF côté cœur + grand dos (A3 max)',
-    prix: [17.9, 15.9, 13.9, 12.9],
+    prix: [18.9, 16.9, 14.9, 13.9],
     devis: { quantities: { tshirts: 50 }, marquages: { tshirts: { coeur: 'dtf', dos: 'dtf' } } },
   },
   {
@@ -151,7 +151,7 @@ export const PACKS = [
     img: '/images/scene-club.webp',
     contenu: 'Maillot de sport',
     marquage: 'Écusson couleur + nom et numéro floqués au dos',
-    prix: [24.9, 22.9, 20.9, 18.9],
+    prix: [25.9, 23.9, 21.9, 19.9],
     devis: { quantities: { maillots: 50 }, marquages: { maillots: { coeur: 'dtf', prenom: 'flocage', numero: 'flocage' } } },
   },
   {
@@ -161,7 +161,7 @@ export const PACKS = [
     img: '/images/casquette.webp',
     contenu: 'Casquette',
     marquage: 'Logo brodé en face avant',
-    prix: [15.9, 14.9, 13.9, 12.9],
+    prix: [16.9, 15.9, 14.9, 13.9],
     devis: { quantities: { casquettes: 50 }, marquages: { casquettes: { face: 'broderie' } } },
   },
 ]
