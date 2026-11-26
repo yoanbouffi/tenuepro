@@ -248,12 +248,13 @@ export const SECTEURS = [
 ]
 
 export const DELAIS = [
-  'Dans 4 à 6 semaines',
-  'Dans 2 à 3 mois',
+  'Dans 8 à 10 semaines (délai standard)',
+  'Plus vite : je suis intéressé par l’option express',
+  'Dans 3 mois ou plus',
   'Date précise (à indiquer dans les précisions)',
   'Pas de contrainte particulière',
 ]
-export const DELAI_MINIMUM = 'Comptez 4 à 6 semaines entre la validation du devis et la livraison.'
+export const DELAI_MINIMUM = 'Comptez 8 à 10 semaines entre la validation du devis et la livraison. Besoin plus vite ? Une option express est possible, avec un supplément de transport indiqué sur le devis.'
 
 export const ETAPES = [
   { titre: 'Votre demande en ligne', texte: 'Pièces, quantités, emplacements et logo : deux minutes suffisent.' },
