@@ -194,7 +194,7 @@ export default function Home() {
           <div className="grid gap-10 lg:grid-cols-[0.8fr_1.6fr]">
             <div>
               <h2 className="h-section">De votre logo à la tenue livrée.</h2>
-              <p className="lead mt-5">Vous validez chaque étape avant que nous passions à la suivante. Les pièces sont fabriquées par nos ateliers partenaires et contrôlées une à une par TenuePro.</p>
+              <p className="lead mt-5">Vous validez chaque étape avant que nous passions à la suivante. Chaque pièce est fabriquée avec soin et contrôlée une à une par TenuePro.</p>
             </div>
             <ol className="grid gap-px overflow-hidden rounded-[22px] bg-ink-line sm:grid-cols-2">
               {ETAPES.map((e, i) => (

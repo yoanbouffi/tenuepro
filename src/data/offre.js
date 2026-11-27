@@ -261,7 +261,7 @@ export const ETAPES = [
   { titre: 'Votre demande en ligne', texte: 'Pièces, quantités, emplacements et logo : deux minutes suffisent.' },
   { titre: 'Conseil et maquette', texte: 'Nous vous proposons la technique adaptée, un devis détaillé et une maquette de votre logo.' },
   { titre: 'Validation', texte: 'Vous validez le devis et la maquette (BAT). L’acompte de 40 % lance la production.' },
-  { titre: 'Fabrication et contrôle', texte: 'Vos pièces sont fabriquées par nos ateliers partenaires, puis contrôlées une à une par TenuePro.' },
+  { titre: 'Fabrication et contrôle', texte: 'Vos pièces sont fabriquées avec soin, puis contrôlées une à une par TenuePro.' },
   { titre: 'Livraison', texte: 'Livraison partout à La Réunion : offerte dès 250 pièces par commande, 15 € en dessous.' },
 ]
 
